@@ -6,6 +6,7 @@ public class lwObject {
     private int object_type_id;
     private String name;
 
+
     lwObject(){
 
     }
@@ -48,4 +49,5 @@ public class lwObject {
     public void setName(String name) {
         this.name = name;
     }
+
 }

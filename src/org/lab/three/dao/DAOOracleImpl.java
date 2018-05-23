@@ -42,7 +42,7 @@ public class DAOOracleImpl implements DAO {
         connect();
         List<lwObject> list = new ArrayList<>();
         try {
-            preparedStatement = connection.prepareStatement("SELECT * FROM LW_OBJECTS WHERE object_type_id = 1");
+            preparedStatement = connection.prepareStatement("SELECT o.* FROM LW_OBJECTS o WHERE o.object_type_id = 1");
             resultSet = preparedStatement.executeQuery();
             while (resultSet.next()) {
                 list.add(parseObject(resultSet));
@@ -59,10 +59,10 @@ public class DAOOracleImpl implements DAO {
         connect();
         List<lwObject> list = new ArrayList<>();
         try {
-            preparedStatement = connection.prepareStatement("SELECT * FROM lw_objects\n" +
+            preparedStatement = connection.prepareStatement("SELECT o.* FROM lw_objects o\n" +
                     "WHERE level=2" +
-                    "START WITH object_id = " + object_id +
-                    "CONNECT BY PRIOR object_id = parent_id");
+                    "START WITH o.object_id = " + object_id +
+                    "CONNECT BY PRIOR o.object_id = o.parent_id");
             resultSet = preparedStatement.executeQuery();
             while (resultSet.next()) {
                 list.add(parseObject(resultSet));
@@ -71,6 +71,37 @@ public class DAOOracleImpl implements DAO {
             e.printStackTrace();
         }
 
+        disconnect();
+        return list;
+    }
+
+    @Override
+    public List<lwObject> removeByID(int[] object_id,int parent_id) {
+        System.out.println("старт удаления");
+        connect();
+        List<lwObject> list = new ArrayList<>();
+        StringBuilder query = new StringBuilder("(");
+        for (int i = 0; i <object_id.length; i++) {
+            query.append(object_id[i]);
+            if (i!=object_id.length-1){
+                query.append(",");
+            }
+        }
+        query.append(")");
+        try {
+            if (object_id.length>0){
+                preparedStatement = connection.prepareStatement("delete from lw_objects where object_id in " + query);
+                int count = preparedStatement.executeUpdate();
+                System.out.println(count + " удалено обьектов");
+            }
+            preparedStatement = connection.prepareStatement("select * from lw_objects where parent_id = " + parent_id);
+            resultSet = preparedStatement.executeQuery();
+            while (resultSet.next()) {
+                list.add(parseObject(resultSet));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
         disconnect();
         return list;
     }

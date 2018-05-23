@@ -21,9 +21,10 @@
             <th>object_type_id</th>
             <th>name</th>
         </tr>
+
         <c:forEach var="objects" items="${list}">
             <tr>
-                <td><input type="checkbox" name="object_id" value="${objects.object_id}"></td>
+                <td><input type="checkbox" name="object_id" value="${objects.parent_id}_${objects.object_id}"></td>
                 <td>${objects.object_id}</td>
                 <td>${objects.parent_id}</td>
                 <td>${objects.object_type_id}</td>

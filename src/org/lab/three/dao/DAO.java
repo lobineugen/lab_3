@@ -9,4 +9,5 @@ public interface DAO {
     void disconnect();
     List<lwObject> getTopObject();
     List<lwObject> getChildren(int object_id);
+    List<lwObject> removeByID(int[] object_id, int parent_id);
 }
