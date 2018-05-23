@@ -2,6 +2,7 @@ package org.lab.three.dao;
 
 import org.lab.three.beans.lwObject;
 
+import java.math.BigInteger;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -37,11 +38,31 @@ public class DAOOracleImpl implements DAO {
         }
     }
 
-    public List<lwObject> getObjects() {
+    public List<lwObject> getTopObject() {
         connect();
         List<lwObject> list = new ArrayList<>();
         try {
-            preparedStatement = connection.prepareStatement("SELECT * FROM LW_OBJECTS");
+            preparedStatement = connection.prepareStatement("SELECT * FROM LW_OBJECTS WHERE object_type_id = 1");
+            resultSet = preparedStatement.executeQuery();
+            while (resultSet.next()) {
+                list.add(parseObject(resultSet));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        disconnect();
+        return list;
+    }
+
+    public List<lwObject> getChildren(int object_id){
+        connect();
+        List<lwObject> list = new ArrayList<>();
+        try {
+            preparedStatement = connection.prepareStatement("SELECT * FROM lw_objects\n" +
+                    "WHERE level=2" +
+                    "START WITH object_id = " + object_id +
+                    "CONNECT BY PRIOR object_id = parent_id");
             resultSet = preparedStatement.executeQuery();
             while (resultSet.next()) {
                 list.add(parseObject(resultSet));

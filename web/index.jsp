@@ -11,11 +11,13 @@
     <title>Start page</title>
   </head>
   <body>
-  <label>
-    Enter your name:
-    <input type="text" name="name"/>
-    <a href="sign">Sign</a>
-  </label>
+  <form method="post" action="sign">
+    <label>
+      Enter your name:
+      <input type="text" name="object_id"/>
+    </label>
+    <input type="submit">
+  </form>
 
   </body>
 </html>
