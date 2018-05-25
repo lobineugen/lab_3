@@ -4,8 +4,7 @@ import org.lab.three.beans.lwObject;
 
 import java.math.BigInteger;
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class DAOOracleImpl implements DAO {
     private Connection connection;
@@ -77,7 +76,6 @@ public class DAOOracleImpl implements DAO {
 
     @Override
     public List<lwObject> removeByID(int[] object_id,int parent_id) {
-        System.out.println("старт удаления");
         connect();
         List<lwObject> list = new ArrayList<>();
         StringBuilder query = new StringBuilder("(");
@@ -92,7 +90,6 @@ public class DAOOracleImpl implements DAO {
             if (object_id.length>0){
                 preparedStatement = connection.prepareStatement("delete from lw_objects where object_id in " + query);
                 int count = preparedStatement.executeUpdate();
-                System.out.println(count + " удалено обьектов");
             }
             preparedStatement = connection.prepareStatement("select * from lw_objects where parent_id = " + parent_id);
             resultSet = preparedStatement.executeQuery();
@@ -104,6 +101,45 @@ public class DAOOracleImpl implements DAO {
         }
         disconnect();
         return list;
+    }
+
+    @Override
+    public void createObject(String name, String parentId, String objectType) {
+        connect();
+        try {
+            if (parentId.equals("0")){
+                parentId = "null";
+            }
+            if (objectType.equals("null")){
+                objectType = "1";
+            }
+            preparedStatement = connection.prepareStatement("insert into LW_OBJECTS VALUES (sss.nextVal,"+parentId+","+objectType+",'"+name+"')");
+            resultSet = preparedStatement.executeQuery();
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        disconnect();
+    }
+
+    @Override
+    public Map<Integer, String> getObjectTypes(int parentId) {
+        connect();
+        Map<Integer,String> map = new HashMap<>();
+        try {
+            preparedStatement = connection.prepareStatement("select object_type_id,name from lw_object_types " +
+                    "where parent_id = (select object_type_id from lw_objects where object_id = "+parentId+")");
+            resultSet = preparedStatement.executeQuery();
+            while (resultSet.next()) {
+                map.put(resultSet.getInt("object_type_id"),resultSet.getString("name"));
+            }
+            System.out.println();
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        disconnect();
+        return map;
     }
 
     private lwObject parseObject(ResultSet resultSet) throws SQLException {
