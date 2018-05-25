@@ -71,4 +71,10 @@ public class MainController {
         }
         return new ModelAndView("showAllObjects", "list", list);
     }
+
+    @RequestMapping("/edit")
+    public ModelAndView editObject(){
+        return null;
+
+    }
 }

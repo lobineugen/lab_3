@@ -13,7 +13,7 @@
     <title>Title</title>
 </head>
 <body>
-<form>
+<form method="post">
     <table border="2">
         <tr>
             <th></th>

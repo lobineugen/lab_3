@@ -11,7 +11,7 @@
     <title>Start page</title>
   </head>
   <body>
-  <form method="post" action="sign">
+  <form method="POST" action="sign">
     <label>
       Enter your name:
       <input type="text" name="object_id"/>

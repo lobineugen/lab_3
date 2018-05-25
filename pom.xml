@@ -21,6 +21,13 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-pmd-plugin</artifactId>
                 <version>3.9.0</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
                 <configuration>
                     <rulesets>
                         <ruleset>web/resources/ruleset.xml</ruleset>
@@ -72,5 +79,5 @@
             <version>${spring.version}</version>
         </dependency>
     </dependencies>
-    
+
 </project>
