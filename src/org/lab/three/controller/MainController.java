@@ -73,8 +73,16 @@ public class MainController {
     }
 
     @RequestMapping("/edit")
-    public ModelAndView editObject(){
-        return null;
+    public ModelAndView editObject(@RequestParam(value = "object_id") String objectId){
+        int id = Integer.parseInt(objectId.substring(objectId.indexOf("_")+1 , objectId.length()));
+        lwObject lwObject = dao.getObjectById(id);
+        return new ModelAndView("editObject","object",lwObject);
+    }
 
+    @RequestMapping("/submitEdit")
+    public ModelAndView submitEdit(@RequestParam(value = "name") String name,
+                                   @RequestParam(value = "objectId") int objectId){
+        List<lwObject> list = dao.changeNameById(objectId,name);
+        return new ModelAndView("showAllObjects","list",list);
     }
 }

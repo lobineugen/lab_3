@@ -101,14 +101,17 @@ public class DAOOracleImpl implements DAO {
                     "where parent_id = (select parent_id from lw_objects where object_id = " + parent_id + ")";
             if (parent_id.equals("0")) {
                 parent_id = "null";
-                quer = "select * from lw_objects " +
-                        "where parent_id is null ";
+                quer = "SELECT * FROM lw_objects " +
+                        "WHERE parent_id IS NULL ";
             }
             if (list.size() == 0) {
                 preparedStatement = connection.prepareStatement(quer);
                 resultSet = preparedStatement.executeQuery();
                 while (resultSet.next()) {
                     list.add(parseObject(resultSet));
+                }
+                if (list.size() == 0) {
+                    list = getTopObject();
                 }
             }
         } catch (SQLException e) {
@@ -147,13 +150,59 @@ public class DAOOracleImpl implements DAO {
             while (resultSet.next()) {
                 map.put(resultSet.getInt("object_type_id"), resultSet.getString("name"));
             }
-            System.out.println();
 
         } catch (SQLException e) {
             e.printStackTrace();
         }
         disconnect();
         return map;
+    }
+
+    @Override
+    public lwObject getObjectById(int objectId) {
+        connect();
+        lwObject lwObject = null;
+        try {
+            preparedStatement = connection.prepareStatement("select * from LW_OBJECTS where OBJECT_ID=" + objectId);
+            resultSet = preparedStatement.executeQuery();
+            while (resultSet.next()) {
+                lwObject = parseObject(resultSet);
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        disconnect();
+        return lwObject;
+    }
+
+    @Override
+    public List<lwObject> changeNameById(int objectId, String name) {
+        connect();
+        List<lwObject> list = new ArrayList<>();
+        try {
+            preparedStatement = connection.prepareStatement("update lw_objects set name='" + name + "' where OBJECT_ID = " + objectId);
+            preparedStatement.executeUpdate();
+            preparedStatement = connection.prepareStatement("select object_type_id from LW_OBJECTS where OBJECT_ID = " + objectId);
+            resultSet = preparedStatement.executeQuery();
+            int object_type_id = 0;
+            while (resultSet.next()){
+                 object_type_id = resultSet.getInt("object_type_id");
+            }
+            if (object_type_id == 1){
+                list = getTopObject();
+            } else {
+                preparedStatement = connection.prepareStatement("select * from lw_objects where parent_id = (select parent_id from lw_objects where object_id = " + objectId + ")");
+                resultSet = preparedStatement.executeQuery();
+                while (resultSet.next()) {
+                    list.add(parseObject(resultSet));
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        disconnect();
+        return list;
     }
 
     private lwObject parseObject(ResultSet resultSet) throws SQLException {

@@ -13,5 +13,7 @@ public interface DAO {
     List<lwObject> removeByID(int[] object_id, String parent_id);
     void createObject(String name, String parentId, String objectType);
     Map<Integer,String> getObjectTypes(int parentId);
+    lwObject getObjectById(int objectId);
+    List<lwObject> changeNameById(int objectId, String name);
 
 }
