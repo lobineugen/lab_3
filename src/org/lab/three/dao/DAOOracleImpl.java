@@ -75,7 +75,8 @@ public class DAOOracleImpl implements DAO {
     }
 
     @Override
-    public List<lwObject> removeByID(int[] object_id, int parent_id) {
+    public List<lwObject> removeByID(int[] object_id, String parent_id) {
+        System.out.println("parent id = " + parent_id);
         connect();
         List<lwObject> list = new ArrayList<>();
         StringBuilder query = new StringBuilder("(");
@@ -96,9 +97,15 @@ public class DAOOracleImpl implements DAO {
             while (resultSet.next()) {
                 list.add(parseObject(resultSet));
             }
+            String quer = "select * from lw_objects " +
+                    "where parent_id = (select parent_id from lw_objects where object_id = " + parent_id + ")";
+            if (parent_id.equals("0")) {
+                parent_id = "null";
+                quer = "select * from lw_objects " +
+                        "where parent_id is null ";
+            }
             if (list.size() == 0) {
-                preparedStatement = connection.prepareStatement("select * from lw_objects " +
-                        "where parent_id = (select parent_id from lw_objects where object_id = " + parent_id + ")");
+                preparedStatement = connection.prepareStatement(quer);
                 resultSet = preparedStatement.executeQuery();
                 while (resultSet.next()) {
                     list.add(parseObject(resultSet));
@@ -123,7 +130,6 @@ public class DAOOracleImpl implements DAO {
             }
             preparedStatement = connection.prepareStatement("insert into LW_OBJECTS VALUES (sss.nextVal," + parentId + "," + objectType + ",'" + name + "')");
             resultSet = preparedStatement.executeQuery();
-
         } catch (SQLException e) {
             e.printStackTrace();
         }

@@ -10,7 +10,7 @@ public interface DAO {
     void disconnect();
     List<lwObject> getTopObject();
     List<lwObject> getChildren(int object_id);
-    List<lwObject> removeByID(int[] object_id, int parent_id);
+    List<lwObject> removeByID(int[] object_id, String parent_id);
     void createObject(String name, String parentId, String objectType);
     Map<Integer,String> getObjectTypes(int parentId);
 

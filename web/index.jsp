@@ -7,17 +7,16 @@
 --%>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <html>
-  <head>
+<head>
     <title>Start page</title>
-  </head>
-  <body>
-  <form method="POST" action="sign">
+</head>
+<body>
+<form method="POST" action="sign">
     <label>
-      Enter your name:
-      <input type="text" name="object_id"/>
+        Enter your name:
+        <input type="text" name="object_id"/>
     </label>
     <input type="submit">
-  </form>
-
-  </body>
+</form>
+</body>
 </html>

@@ -37,10 +37,10 @@ public class MainController {
     @RequestMapping("/remove")
     public ModelAndView removeObject(@RequestParam(value = "object_id") String... arrays) {
         int[] object_id_array= new int[arrays.length];
-        int parent_id = 0;
+        String parent_id = "0";
         for (int i = 0; i <arrays.length; i++){
             object_id_array[i] = Integer.parseInt(arrays[i].substring(arrays[i].indexOf("_")+1 , arrays[i].length()));
-            parent_id = Integer.parseInt(arrays[i].substring(0,arrays[i].indexOf("_")));
+            parent_id = arrays[i].substring(0,arrays[i].indexOf("_"));
         }
         List<lwObject> list = dao.removeByID(object_id_array, parent_id);
         return new ModelAndView("showAllObjects", "list", list);
