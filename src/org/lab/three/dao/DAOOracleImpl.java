@@ -2,6 +2,10 @@ package org.lab.three.dao;
 
 import org.lab.three.beans.lwObject;
 
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+import javax.sql.DataSource;
 import java.math.BigInteger;
 import java.sql.*;
 import java.util.*;
@@ -12,14 +16,17 @@ public class DAOOracleImpl implements DAO {
     private ResultSet resultSet;
 
     public void connect() {
+        Hashtable ht = new Hashtable();
+        ht.put(Context.INITIAL_CONTEXT_FACTORY, "weblogic.jndi.WLInitialContextFactory");
+        ht.put(Context.PROVIDER_URL, "t3://localhost:7001");
         try {
-            Class.forName("oracle.jdbc.driver.OracleDriver");
-            connection = DriverManager.getConnection("jdbc:oracle:thin:@localhost:1521:XE",
-                    "system", "student");
+            Context ctx = new InitialContext(ht);
+            DataSource ds = (DataSource) ctx.lookup("datasourceLab");
+            connection = ds.getConnection();
             if (!connection.isClosed()) {
                 System.out.println("Connection successful");
             }
-        } catch (ClassNotFoundException | SQLException e) {
+        } catch (NamingException | SQLException e) {
             e.printStackTrace();
         }
     }

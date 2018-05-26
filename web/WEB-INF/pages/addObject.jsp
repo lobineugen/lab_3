@@ -17,12 +17,13 @@
         Name:
         <input type="text" name="objectName">
         <input type="hidden" name="parentId" value="<%=array.get(0)%>">
-        <select name="objectType" >
-            <% if(array.size()==1) { %>
-                <option value="null" selected>University</option>
+        <select name="objectType">
+            <% if (array.size() == 1) { %>
+            <option value="null" selected>University</option>
             <% } %>
-            <% for (int i = 1; i<array.size(); i++) {%>
-            <option value="<%=array.get(i++)%>"><%=array.get(i)%></option>
+            <% for (int i = 1; i < array.size(); i++) {%>
+            <option value="<%=array.get(i++)%>"><%=array.get(i)%>
+            </option>
             <%} %>
         </select>
     </label>

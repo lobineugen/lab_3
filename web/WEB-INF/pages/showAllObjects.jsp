@@ -23,29 +23,28 @@
             <th>name</th>
         </tr>
         <% if (request.getAttribute("list") instanceof ArrayList) {%>
-            <c:forEach var="objects" items="${list}">
-                <tr>
-                    <td><input type="checkbox" name="object_id" value="${objects.parent_id}_${objects.object_id}"></td>
-                    <td>${objects.object_id}</td>
-                    <td>${objects.parent_id}</td>
-                    <td>${objects.object_type_id}</td>
-                    <td><a href="children?object_id=${objects.object_id}">${objects.name}</a></td>
-                </tr>
+        <c:forEach var="objects" items="${list}">
+            <tr>
+                <td><input type="checkbox" name="object_id" value="${objects.parent_id}_${objects.object_id}"></td>
+                <td>${objects.object_id}</td>
+                <td>${objects.parent_id}</td>
+                <td>${objects.object_type_id}</td>
+                <td><a href="children?object_id=${objects.object_id}">${objects.name}</a></td>
+            </tr>
 
-            </c:forEach>
-            <%ArrayList list = ((ArrayList)request.getAttribute("list")); %>
-            <% if (list.size()>0) {%>
-                <input type="hidden" name="parentId" value="<%=((lwObject)list.get(0)).getParent_id()%>"/>
-            <% }%>
+        </c:forEach>
+        <%ArrayList list = ((ArrayList) request.getAttribute("list")); %>
+        <% if (list.size() > 0) {%>
+        <input type="hidden" name="parentId" value="<%=((lwObject)list.get(0)).getParent_id()%>"/>
+        <% }%>
         <%} else {%>
-            <input type="hidden" name="parentId" value="<%=request.getAttribute("list")%>"/>
+        <input type="hidden" name="parentId" value="<%=request.getAttribute("list")%>"/>
         <%} %>
         <input type="submit" formaction="add" value="Add">
         <input type="submit" formaction="edit" value="Edit">
         <input type="submit" formaction="remove" value="Remove">
     </table>
 </form>
-
 
 
 </body>
