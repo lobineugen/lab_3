@@ -1,6 +1,7 @@
 package org.lab.three.dao;
 
 import com.ibatis.common.jdbc.ScriptRunner;
+import org.apache.log4j.Logger;
 import org.lab.three.beans.lwObject;
 import org.lab.three.controller.Init;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,8 +20,10 @@ public class DAOOracleImpl implements DAO {
     private Connection connection;
     private PreparedStatement preparedStatement;
     private ResultSet resultSet;
+    private static final Logger LOGGER = Logger.getLogger(DAOOracleImpl.class);
 
     public void connect() {
+        LOGGER.debug("Connecting to database");
         Hashtable ht = new Hashtable();
         ht.put(Context.INITIAL_CONTEXT_FACTORY, "weblogic.jndi.WLInitialContextFactory");
         ht.put(Context.PROVIDER_URL, "t3://localhost:7001");
@@ -29,14 +32,15 @@ public class DAOOracleImpl implements DAO {
             DataSource ds = (DataSource) ctx.lookup("datasourceLab");
             connection = ds.getConnection();
             if (!connection.isClosed()) {
-                System.out.println("Connection successful");
+                LOGGER.info("Connection successful");
             }
         } catch (NamingException | SQLException e) {
-            e.printStackTrace();
+            LOGGER.error("Exception during connection to database", e);
         }
     }
 
     public void disconnect() {
+        LOGGER.debug("Disconnecting from database");
         try {
             if (connection != null)
                 connection.close();
@@ -45,11 +49,12 @@ public class DAOOracleImpl implements DAO {
             if (resultSet != null)
                 resultSet.close();
         } catch (SQLException e) {
-            e.printStackTrace();
+            LOGGER.error("Exception during disconnection from database", e);
         }
     }
 
     public List<lwObject> getTopObject() {
+        LOGGER.debug("Getting top objects");
         connect();
         List<lwObject> list = new ArrayList<>();
         try {
@@ -59,7 +64,7 @@ public class DAOOracleImpl implements DAO {
                 list.add(parseObject(resultSet));
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            LOGGER.error("Exception while getting top objects", e);
         }
 
         disconnect();
@@ -67,6 +72,7 @@ public class DAOOracleImpl implements DAO {
     }
 
     public List<lwObject> getChildren(int object_id) {
+        LOGGER.debug("Getting children objects");
         connect();
         List<lwObject> list = new ArrayList<>();
         try {
@@ -79,7 +85,7 @@ public class DAOOracleImpl implements DAO {
                 list.add(parseObject(resultSet));
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            LOGGER.error("Exception while getting children objects", e);
         }
 
         disconnect();
@@ -88,6 +94,7 @@ public class DAOOracleImpl implements DAO {
 
     @Override
     public List<lwObject> removeByID(int[] object_id, String parent_id) {
+        LOGGER.debug("Removing object by ID");
         System.out.println("parent id = " + parent_id);
         connect();
         List<lwObject> list = new ArrayList<>();
@@ -127,7 +134,7 @@ public class DAOOracleImpl implements DAO {
                 }
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            LOGGER.error("Exception while removing object by ID", e);
         }
         disconnect();
         return list;
@@ -135,6 +142,7 @@ public class DAOOracleImpl implements DAO {
 
     @Override
     public void createObject(String name, String parentId, String objectType) {
+        LOGGER.debug("Creating object");
         connect();
         try {
             if (parentId.equals("0")) {
@@ -146,13 +154,14 @@ public class DAOOracleImpl implements DAO {
             preparedStatement = connection.prepareStatement("insert into LW_OBJECTS VALUES (sss.nextVal," + parentId + "," + objectType + ",'" + name + "')");
             resultSet = preparedStatement.executeQuery();
         } catch (SQLException e) {
-            e.printStackTrace();
+            LOGGER.error("Exception while creating object", e);
         }
         disconnect();
     }
 
     @Override
     public Map<Integer, String> getObjectTypes(int parentId) {
+        LOGGER.debug("Getting object type");
         connect();
         Map<Integer, String> map = new HashMap<>();
         try {
@@ -164,7 +173,7 @@ public class DAOOracleImpl implements DAO {
             }
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            LOGGER.error("Exception while getting object type", e);
         }
         disconnect();
         return map;
@@ -172,6 +181,7 @@ public class DAOOracleImpl implements DAO {
 
     @Override
     public lwObject getObjectById(int objectId) {
+        LOGGER.debug("Getting object by ID");
         connect();
         lwObject lwObject = null;
         try {
@@ -182,7 +192,7 @@ public class DAOOracleImpl implements DAO {
             }
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            LOGGER.error("Exception while getting object by ID", e);
         }
         disconnect();
         return lwObject;
@@ -190,6 +200,7 @@ public class DAOOracleImpl implements DAO {
 
     @Override
     public List<lwObject> changeNameById(int objectId, String name) {
+        LOGGER.debug("Changing name by ID");
         connect();
         List<lwObject> list = new ArrayList<>();
         try {
@@ -211,7 +222,7 @@ public class DAOOracleImpl implements DAO {
                 }
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            LOGGER.error("Exception while changing name by ID", e);
         }
         disconnect();
         return list;
@@ -219,6 +230,7 @@ public class DAOOracleImpl implements DAO {
 
     @Override
     public int checkTables() {
+        LOGGER.debug("Checking tables");
         connect();
         int count = 0;
         try {
@@ -228,7 +240,7 @@ public class DAOOracleImpl implements DAO {
                 count = resultSet.getInt("counts");
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            LOGGER.error("Exception while checking tables", e);
         }
         disconnect();
         return count;
@@ -236,6 +248,7 @@ public class DAOOracleImpl implements DAO {
 
     @Override
     public void executeScript() {
+        LOGGER.debug("Executing script");
         connect();
         URL script = DAOOracleImpl.class.getClassLoader().getResource("script.sql");
         ScriptRunner sr = new ScriptRunner(connection,false,false);
@@ -243,12 +256,13 @@ public class DAOOracleImpl implements DAO {
             Reader reader = new BufferedReader(new FileReader(script.getPath()));
             sr.runScript(reader);
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.error("Exception while executing script", e);
         }
         disconnect();
     }
 
     private lwObject parseObject(ResultSet resultSet) throws SQLException {
+        LOGGER.debug("Parsing object");
         return new lwObject(resultSet.getInt("object_id"),
                 resultSet.getInt("parent_id"),
                 resultSet.getInt("object_type_id"),
