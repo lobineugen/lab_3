@@ -15,5 +15,7 @@ public interface DAO {
     Map<Integer,String> getObjectTypes(int parentId);
     lwObject getObjectById(int objectId);
     List<lwObject> changeNameById(int objectId, String name);
+    int checkTables();
+    void executeScript();
 
 }

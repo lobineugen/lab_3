@@ -1,12 +1,17 @@
 package org.lab.three.dao;
 
+import com.ibatis.common.jdbc.ScriptRunner;
 import org.lab.three.beans.lwObject;
+import org.lab.three.controller.Init;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
+import java.io.*;
 import java.math.BigInteger;
+import java.net.URL;
 import java.sql.*;
 import java.util.*;
 
@@ -210,6 +215,37 @@ public class DAOOracleImpl implements DAO {
         }
         disconnect();
         return list;
+    }
+
+    @Override
+    public int checkTables() {
+        connect();
+        int count = 0;
+        try {
+            preparedStatement = connection.prepareStatement("select count(table_name) as counts from user_tables where table_name in ('LW_PARAMS','LW_AOT','LW_ATTR','LW_OBJECTS','LW_OBJECT_TYPES')");
+            resultSet = preparedStatement.executeQuery();
+            while (resultSet.next()) {
+                count = resultSet.getInt("counts");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        disconnect();
+        return count;
+    }
+
+    @Override
+    public void executeScript() {
+        connect();
+        URL script = DAOOracleImpl.class.getClassLoader().getResource("script.sql");
+        ScriptRunner sr = new ScriptRunner(connection,false,false);
+        try {
+            Reader reader = new BufferedReader(new FileReader(script.getPath()));
+            sr.runScript(reader);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        disconnect();
     }
 
     private lwObject parseObject(ResultSet resultSet) throws SQLException {
