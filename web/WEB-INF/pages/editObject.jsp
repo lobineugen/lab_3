@@ -1,4 +1,5 @@
-<%@ page import="org.lab.three.beans.lwObject" %><%--
+<%@ page import="org.lab.three.beans.LWObject" %>
+<%--
   Created by IntelliJ IDEA.
   User: Lobin Eugene
   Date: 25.05.2018
@@ -12,7 +13,7 @@
 </head>
 <body>
 <form method="post">
-    <%lwObject object = (lwObject) request.getAttribute("object"); %>
+    <%LWObject object = (LWObject) request.getAttribute("object"); %>
     <label>
         Object id:
         <input type="text" name="objectId" value="<%=object.getObject_id()%>" readonly>

@@ -1,5 +1,6 @@
-<%@ page import="org.lab.three.beans.lwObject" %>
-<%@ page import="java.util.ArrayList" %><%--
+<%@ page import="org.lab.three.beans.LWObject" %>
+<%@ page import="java.util.ArrayList" %>
+<%@ page import="org.lab.three.beans.LWObject" %><%--
   Created by IntelliJ IDEA.
   User: Lobin Eugene
   Date: 21.05.2018
@@ -35,7 +36,7 @@
         </c:forEach>
         <%ArrayList list = ((ArrayList) request.getAttribute("list")); %>
         <% if (list.size() > 0) {%>
-        <input type="hidden" name="parentId" value="<%=((lwObject)list.get(0)).getParent_id()%>"/>
+        <input type="hidden" name="parentId" value="<%=((LWObject)list.get(0)).getParent_id()%>"/>
         <% }%>
         <%} else {%>
         <input type="hidden" name="parentId" value="<%=request.getAttribute("list")%>"/>

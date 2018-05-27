@@ -2,16 +2,13 @@ package org.lab.three.dao;
 
 import com.ibatis.common.jdbc.ScriptRunner;
 import org.apache.log4j.Logger;
-import org.lab.three.beans.lwObject;
-import org.lab.three.controller.Init;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.lab.three.beans.LWObject;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
 import java.io.*;
-import java.math.BigInteger;
 import java.net.URL;
 import java.sql.*;
 import java.util.*;
@@ -53,10 +50,10 @@ public class DAOOracleImpl implements DAO {
         }
     }
 
-    public List<lwObject> getTopObject() {
+    public List<LWObject> getTopObject() {
         LOGGER.debug("Getting top objects");
         connect();
-        List<lwObject> list = new ArrayList<>();
+        List<LWObject> list = new ArrayList<>();
         try {
             preparedStatement = connection.prepareStatement("SELECT o.* FROM LW_OBJECTS o WHERE o.object_type_id = 1");
             resultSet = preparedStatement.executeQuery();
@@ -71,10 +68,10 @@ public class DAOOracleImpl implements DAO {
         return list;
     }
 
-    public List<lwObject> getChildren(int object_id) {
+    public List<LWObject> getChildren(int object_id) {
         LOGGER.debug("Getting children objects");
         connect();
-        List<lwObject> list = new ArrayList<>();
+        List<LWObject> list = new ArrayList<>();
         try {
             preparedStatement = connection.prepareStatement("SELECT o.* FROM lw_objects o\n" +
                     "WHERE level=2" +
@@ -93,11 +90,11 @@ public class DAOOracleImpl implements DAO {
     }
 
     @Override
-    public List<lwObject> removeByID(int[] object_id, String parent_id) {
+    public List<LWObject> removeByID(int[] object_id, String parent_id) {
         LOGGER.debug("Removing object by ID");
         System.out.println("parent id = " + parent_id);
         connect();
-        List<lwObject> list = new ArrayList<>();
+        List<LWObject> list = new ArrayList<>();
         StringBuilder query = new StringBuilder("(");
         for (int i = 0; i < object_id.length; i++) {
             query.append(object_id[i]);
@@ -109,7 +106,7 @@ public class DAOOracleImpl implements DAO {
         try {
             if (object_id.length > 0) {
                 preparedStatement = connection.prepareStatement("delete from lw_objects where object_id in " + query);
-                int count = preparedStatement.executeUpdate();
+                preparedStatement.executeUpdate();
             }
             preparedStatement = connection.prepareStatement("select * from lw_objects where parent_id = " + parent_id);
             resultSet = preparedStatement.executeQuery();
@@ -119,7 +116,6 @@ public class DAOOracleImpl implements DAO {
             String quer = "select * from lw_objects " +
                     "where parent_id = (select parent_id from lw_objects where object_id = " + parent_id + ")";
             if (parent_id.equals("0")) {
-                parent_id = "null";
                 quer = "SELECT * FROM lw_objects " +
                         "WHERE parent_id IS NULL ";
             }
@@ -180,29 +176,29 @@ public class DAOOracleImpl implements DAO {
     }
 
     @Override
-    public lwObject getObjectById(int objectId) {
+    public LWObject getObjectById(int objectId) {
         LOGGER.debug("Getting object by ID");
         connect();
-        lwObject lwObject = null;
+        LWObject LWObject = null;
         try {
             preparedStatement = connection.prepareStatement("select * from LW_OBJECTS where OBJECT_ID=" + objectId);
             resultSet = preparedStatement.executeQuery();
             while (resultSet.next()) {
-                lwObject = parseObject(resultSet);
+                LWObject = parseObject(resultSet);
             }
 
         } catch (SQLException e) {
             LOGGER.error("Exception while getting object by ID", e);
         }
         disconnect();
-        return lwObject;
+        return LWObject;
     }
 
     @Override
-    public List<lwObject> changeNameById(int objectId, String name) {
+    public List<LWObject> changeNameById(int objectId, String name) {
         LOGGER.debug("Changing name by ID");
         connect();
-        List<lwObject> list = new ArrayList<>();
+        List<LWObject> list = new ArrayList<>();
         try {
             preparedStatement = connection.prepareStatement("update lw_objects set name='" + name + "' where OBJECT_ID = " + objectId);
             preparedStatement.executeUpdate();
@@ -261,9 +257,9 @@ public class DAOOracleImpl implements DAO {
         disconnect();
     }
 
-    private lwObject parseObject(ResultSet resultSet) throws SQLException {
+    private LWObject parseObject(ResultSet resultSet) throws SQLException {
         LOGGER.debug("Parsing object");
-        return new lwObject(resultSet.getInt("object_id"),
+        return new LWObject(resultSet.getInt("object_id"),
                 resultSet.getInt("parent_id"),
                 resultSet.getInt("object_type_id"),
                 resultSet.getString("name"));

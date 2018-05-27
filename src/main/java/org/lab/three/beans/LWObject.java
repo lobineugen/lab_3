@@ -1,17 +1,17 @@
 package org.lab.three.beans;
 
-public class lwObject {
+public class LWObject {
     private int object_id;
     private int parent_id;
     private int object_type_id;
     private String name;
 
 
-    lwObject(){
+    LWObject(){
 
     }
 
-    public lwObject(int object_id, int parent_id, int object_type_id, String name) {
+    public LWObject(int object_id, int parent_id, int object_type_id, String name) {
         this.object_id = object_id;
         this.parent_id = parent_id;
         this.object_type_id = object_type_id;

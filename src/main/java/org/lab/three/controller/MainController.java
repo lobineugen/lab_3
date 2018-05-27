@@ -1,16 +1,14 @@
 package org.lab.three.controller;
 
 import org.apache.log4j.Logger;
-import org.lab.three.beans.lwObject;
+import org.lab.three.beans.LWObject;
 import org.lab.three.dao.DAO;
-import org.lab.three.dao.DAOOracleImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 
-import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -25,7 +23,7 @@ public class MainController {
     @RequestMapping("/sign")
     public ModelAndView showObjects() {
         LOGGER.debug("Showing top objects");
-        List<lwObject> list = dao.getTopObject();
+        List<LWObject> list = dao.getTopObject();
         return new ModelAndView("showAllObjects", "list", list);
     }
 
@@ -33,7 +31,7 @@ public class MainController {
     public ModelAndView showChildren(@RequestParam(value = "object_id") String object_id) {
         LOGGER.debug("Showing children");
         int id = Integer.parseInt(object_id.substring(object_id.lastIndexOf("_") + 1, object_id.length()));
-        List<lwObject> list = dao.getChildren(id);
+        List<LWObject> list = dao.getChildren(id);
         if (list.size() == 0) {
             return new ModelAndView("showAllObjects", "list", object_id);
         }
@@ -49,7 +47,7 @@ public class MainController {
             object_id_array[i] = Integer.parseInt(arrays[i].substring(arrays[i].indexOf("_") + 1, arrays[i].length()));
             parent_id = arrays[i].substring(0, arrays[i].indexOf("_"));
         }
-        List<lwObject> list = dao.removeByID(object_id_array, parent_id);
+        List<LWObject> list = dao.removeByID(object_id_array, parent_id);
         return new ModelAndView("showAllObjects", "list", list);
     }
 
@@ -72,7 +70,7 @@ public class MainController {
                                         @RequestParam(value = "objectType") String objectType) {
         LOGGER.debug("Creating new objects");
         dao.createObject(objectName, parentId, objectType);
-        List<lwObject> list;
+        List<LWObject> list;
         if (parentId.equals("0")) {
             list = dao.getTopObject();
         } else {
@@ -85,15 +83,15 @@ public class MainController {
     public ModelAndView editObject(@RequestParam(value = "object_id") String objectId) {
         LOGGER.debug("Editing objects");
         int id = Integer.parseInt(objectId.substring(objectId.indexOf("_") + 1, objectId.length()));
-        lwObject lwObject = dao.getObjectById(id);
-        return new ModelAndView("editObject", "object", lwObject);
+        LWObject LWObject = dao.getObjectById(id);
+        return new ModelAndView("editObject", "object", LWObject);
     }
 
     @RequestMapping("/submitEdit")
     public ModelAndView submitEdit(@RequestParam(value = "name") String name,
                                    @RequestParam(value = "objectId") int objectId) {
         LOGGER.debug("Submiting edit");
-        List<lwObject> list = dao.changeNameById(objectId, name);
+        List<LWObject> list = dao.changeNameById(objectId, name);
         return new ModelAndView("showAllObjects", "list", list);
     }
 }

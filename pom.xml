@@ -51,6 +51,11 @@
                 <artifactId>maven-war-plugin</artifactId>
                 <version>3.2.1</version>
                 <configuration>
+                    <webResources>
+                        <resource>
+                            <directory>${basedir}/src/main/resources</directory>
+                        </resource>
+                    </webResources>
                     <archive>
                         <manifest>
                             <addClasspath>true</addClasspath>
