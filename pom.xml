@@ -16,6 +16,11 @@
     </properties>
 
     <build>
+        <resources>
+            <resource>
+                <directory>${basedir}/src/main/resources</directory>
+            </resource>
+        </resources>
         <pluginManagement>
             <plugins>
                 <plugin>
@@ -33,7 +38,7 @@
                 <configuration>
                     <targetJdk>1.8</targetJdk>
                     <rulesets>
-                        <ruleset>/web/resources/ruleset.xml</ruleset>
+                        <ruleset>${basedir}/src/main/resources/ruleset.xml</ruleset>
                     </rulesets>
                 </configuration>
             </plugin>
@@ -51,11 +56,6 @@
                 <artifactId>maven-war-plugin</artifactId>
                 <version>3.2.1</version>
                 <configuration>
-                    <webResources>
-                        <resource>
-                            <directory>${basedir}/src/main/resources</directory>
-                        </resource>
-                    </webResources>
                     <archive>
                         <manifest>
                             <addClasspath>true</addClasspath>
