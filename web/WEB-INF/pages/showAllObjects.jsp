@@ -22,6 +22,9 @@
             $("#object_list").tablesorter({sortList: [[0, 1]]});
         });
     </script>
+	<style>
+    <%@include file="/WEB-INF/css/styles.css"%>
+	</style>
 </head>
 <body>
 <form method="post">
@@ -29,10 +32,10 @@
         <thead>
         <tr>
             <th>№</th>
-            <th>object_id</th>
-            <th>parent_id</th>
-            <th>object_type_id</th>
-            <th>name</th>
+            <th><a>object_id</a></th>
+            <th><a>parent_id</a></th>
+            <th><a>object_type_id</a></th>
+            <th><a>name</a></th>
         </tr>
 
         </thead>
