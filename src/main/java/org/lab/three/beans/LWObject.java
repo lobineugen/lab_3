@@ -1,21 +1,25 @@
 package org.lab.three.beans;
 
+import java.util.Map;
+
 public class LWObject {
     private int object_id;
     private int parent_id;
     private int object_type_id;
     private String name;
+    private Map<String, String> params;
 
 
-    LWObject(){
+    LWObject() {
 
     }
 
-    public LWObject(int object_id, int parent_id, int object_type_id, String name) {
+    public LWObject(int object_id, int parent_id, int object_type_id, String name, Map<String, String> params) {
         this.object_id = object_id;
         this.parent_id = parent_id;
         this.object_type_id = object_type_id;
         this.name = name;
+        this.params = params;
     }
 
     public int getObject_id() {
@@ -50,4 +54,11 @@ public class LWObject {
         this.name = name;
     }
 
+    public Map<String, String> getParams() {
+        return params;
+    }
+
+    public void setParams(Map<String, String> params) {
+        this.params = params;
+    }
 }

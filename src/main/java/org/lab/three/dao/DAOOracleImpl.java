@@ -69,14 +69,12 @@ public class DAOOracleImpl implements DAO {
     }
 
     public List<LWObject> getChildren(int object_id) {
+        System.out.println("get children for - " + object_id);
         LOGGER.debug("Getting children objects");
         connect();
         List<LWObject> list = new ArrayList<>();
         try {
-            preparedStatement = connection.prepareStatement("SELECT o.* FROM lw_objects o\n" +
-                    "WHERE level=2" +
-                    "START WITH o.object_id = " + object_id +
-                    "CONNECT BY PRIOR o.object_id = o.parent_id");
+            preparedStatement = connection.prepareStatement("select * from LW_OBJECTS where PARENT_ID = " + object_id);
             resultSet = preparedStatement.executeQuery();
             while (resultSet.next()) {
                 list.add(parseObject(resultSet));
@@ -205,10 +203,10 @@ public class DAOOracleImpl implements DAO {
             preparedStatement = connection.prepareStatement("select object_type_id from LW_OBJECTS where OBJECT_ID = " + objectId);
             resultSet = preparedStatement.executeQuery();
             int object_type_id = 0;
-            while (resultSet.next()){
-                 object_type_id = resultSet.getInt("object_type_id");
+            while (resultSet.next()) {
+                object_type_id = resultSet.getInt("object_type_id");
             }
-            if (object_type_id == 1){
+            if (object_type_id == 1) {
                 list = getTopObject();
             } else {
                 preparedStatement = connection.prepareStatement("select * from lw_objects where parent_id = (select parent_id from lw_objects where object_id = " + objectId + ")");
@@ -230,7 +228,7 @@ public class DAOOracleImpl implements DAO {
         connect();
         int count = 0;
         try {
-            preparedStatement = connection.prepareStatement("select count(table_name) as counts from user_tables where table_name in ('LW_PARAMS','LW_AOT','LW_ATTR','LW_OBJECTS','LW_OBJECT_TYPES')");
+            preparedStatement = connection.prepareStatement("SELECT count(table_name) AS counts FROM user_tables WHERE table_name IN ('LW_PARAMS','LW_AOT','LW_ATTR','LW_OBJECTS','LW_OBJECT_TYPES')");
             resultSet = preparedStatement.executeQuery();
             while (resultSet.next()) {
                 count = resultSet.getInt("counts");
@@ -247,7 +245,7 @@ public class DAOOracleImpl implements DAO {
         LOGGER.debug("Executing script");
         connect();
         URL script = DAOOracleImpl.class.getClassLoader().getResource("script.sql");
-        ScriptRunner sr = new ScriptRunner(connection,false,false);
+        ScriptRunner sr = new ScriptRunner(connection, false, false);
         try {
             Reader reader = new BufferedReader(new FileReader(script.getPath()));
             sr.runScript(reader);
@@ -257,11 +255,66 @@ public class DAOOracleImpl implements DAO {
         disconnect();
     }
 
+    @Override
+    public Map<String, String> getParamsById(int objectId) {
+        Map<String, String> arrays = new HashMap<>();
+        try {
+            preparedStatement = connection.prepareStatement("select a.attr_id,a.name, p.value from lw_params p, lw_attr a where a.attr_id = p.attr_id  and object_id = " + objectId);
+            ResultSet resultSet = preparedStatement.executeQuery();
+            while (resultSet.next()) {
+                arrays.put(resultSet.getInt("attr_id") + "_" + resultSet.getString("name"),
+                        resultSet.getString("value"));
+            }
+        } catch (SQLException e) {
+            LOGGER.error("Exception get params by id ", e);
+        }
+        return arrays;
+    }
+
+    @Override
+    public ArrayList<Integer> getAttrByObjectId(int objectId) {
+        connect();
+        ArrayList<Integer> arrayList = new ArrayList<>();
+        try {
+            preparedStatement = connection.prepareStatement("select attr_id from lw_aot " +
+                    "where object_type_id = (select object_type_id from lw_objects where object_id = " + objectId + ")");
+            ResultSet resultSet = preparedStatement.executeQuery();
+            while (resultSet.next()) {
+                arrayList.add(resultSet.getInt("attr_id"));
+            }
+            System.out.println(arrayList.size() + " size of array list with aot");
+        } catch (SQLException e) {
+            LOGGER.error("Exception get attr by object id", e);
+        }
+        disconnect();
+        return arrayList;
+    }
+
+    @Override
+    public void updateParams(int objectId, int attr_id, String value) {
+        connect();
+        try {
+            if (!value.isEmpty()) {
+                preparedStatement = connection.prepareStatement("MERGE INTO lw_params p " +
+                        "USING (SELECT object_id FROM lw_objects WHERE object_id = " + objectId + ") s " +
+                        "ON (p.object_id = s.object_id AND p.attr_id = " + attr_id + ") " +
+                        "WHEN MATCHED THEN UPDATE SET p.value = '" + value + "'"+
+                        " WHEN NOT MATCHED THEN INSERT VALUES (s.object_id," + attr_id + ", '" + value + "')");
+                preparedStatement.executeUpdate();
+            }
+        } catch (SQLException e) {
+            LOGGER.error("Exception update params", e);
+        }
+        disconnect();
+    }
+
     private LWObject parseObject(ResultSet resultSet) throws SQLException {
         LOGGER.debug("Parsing object");
-        return new LWObject(resultSet.getInt("object_id"),
+        int object_id = resultSet.getInt("object_id");
+        Map<String, String> map = getParamsById(object_id);
+        return new LWObject(object_id,
                 resultSet.getInt("parent_id"),
                 resultSet.getInt("object_type_id"),
-                resultSet.getString("name"));
+                resultSet.getString("name"), map);
     }
 }

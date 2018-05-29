@@ -44,7 +44,9 @@ constraint params_attr_fk foreign key (attr_id) references lw_attr(attr_id),
 constraint params_objects_fk foreign key (object_id) references lw_objects(object_id) on delete cascade
 );
 
-
+CREATE SEQUENCE sss
+  START WITH 100
+  INCREMENT BY 1;
 
 
 insert into lw_object_types values (1,null,'University');

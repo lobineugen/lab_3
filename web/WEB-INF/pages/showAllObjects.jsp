@@ -33,8 +33,8 @@
         <tr>
             <th>№</th>
             <th><a>object_id</a></th>
-            <th><a>parent_id</a></th>
-            <th><a>object_type_id</a></th>
+            <%--<th><a>parent_id</a></th>--%>
+            <%--<th><a>object_type_id</a></th>--%>
             <th><a>name</a></th>
         </tr>
 
@@ -45,10 +45,10 @@
                 <tr>
                     <td><input type="checkbox" name="object_id" value="${objects.parent_id}_${objects.object_id}"></td>
                     <td>${objects.object_id}</td>
-                    <td>${objects.parent_id}</td>
-                    <td>${objects.object_type_id}</td>
+                    <%--<td>${objects.parent_id}</td>--%>
+                    <%--<td>${objects.object_type_id}</td>--%>
                     <td><a href="children?object_id=${objects.object_id}">${objects.name}</a></td>
-                </tr
+                </tr>
             </c:forEach>
         </tbody>
 

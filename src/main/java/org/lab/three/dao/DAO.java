@@ -2,6 +2,7 @@ package org.lab.three.dao;
 
 import org.lab.three.beans.LWObject;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -17,5 +18,8 @@ public interface DAO {
     List<LWObject> changeNameById(int objectId, String name);
     int checkTables();
     void executeScript();
+    Map<String, String> getParamsById(int objectId);
+    ArrayList<Integer> getAttrByObjectId(int objectId);
+    void updateParams(int objectId, int attr_id, String value);
 
 }

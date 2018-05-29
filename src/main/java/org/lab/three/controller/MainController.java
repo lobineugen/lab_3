@@ -4,11 +4,14 @@ import org.apache.log4j.Logger;
 import org.lab.three.beans.LWObject;
 import org.lab.three.dao.DAO;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpRequest;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -89,8 +92,16 @@ public class MainController {
 
     @RequestMapping("/submitEdit")
     public ModelAndView submitEdit(@RequestParam(value = "name") String name,
-                                   @RequestParam(value = "objectId") int objectId) {
+                                   @RequestParam(value = "objectId") int objectId,
+                                   HttpServletRequest request) {
         LOGGER.debug("Submiting edit");
+        ArrayList<Integer> attr = dao.getAttrByObjectId(objectId);
+        for (Integer temp : attr) {
+            if (request.getParameter(Integer.toString(temp)) != null) {
+                String value = request.getParameter(Integer.toString(temp));
+                dao.updateParams(objectId, temp, value);
+            }
+        }
         List<LWObject> list = dao.changeNameById(objectId, name);
         return new ModelAndView("showAllObjects", "list", list);
     }
