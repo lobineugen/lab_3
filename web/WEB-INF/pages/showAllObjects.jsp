@@ -18,13 +18,34 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.30.4/js/extras/jquery.tablesorter.pager.min.js"
             type="text/javascript"></script>
     <script type="text/javascript">
-        $(document).ready(function () {
+        $(document).ready(function(){
             $("#object_list").tablesorter({sortList: [[0, 1]]});
         });
+        function show_alert() {
+            var int = checkBoxChecked();
+            if (int > 0) {
+                if (confirm("Do you really want to remove this objects?"))
+                    document.forms[0].submit();
+                else
+                    return false;
+            } else {
+                return false;
+            }
+
+        }
+
+        function edit_check() {
+            return checkBoxChecked() === 1;
+        }
+
+
+        function checkBoxChecked() {
+            return $("input[name='object_id']:checked").length;
+        }
     </script>
-	<style>
-    <%@include file="/WEB-INF/css/styles.css"%>
-	</style>
+    <style>
+        <%@include file="/WEB-INF/css/styles.css"%>
+    </style>
 </head>
 <body>
 <form method="post">
@@ -33,23 +54,34 @@
         <tr>
             <th>№</th>
             <th><a>object_id</a></th>
-            <%--<th><a>parent_id</a></th>--%>
-            <%--<th><a>object_type_id</a></th>--%>
             <th><a>name</a></th>
         </tr>
 
         </thead>
         <tbody>
         <% if (request.getAttribute("list") instanceof ArrayList) {%>
-            <c:forEach var="objects" items="${list}">
-                <tr>
-                    <td><input type="checkbox" name="object_id" value="${objects.parent_id}_${objects.object_id}"></td>
-                    <td>${objects.object_id}</td>
-                    <%--<td>${objects.parent_id}</td>--%>
-                    <%--<td>${objects.object_type_id}</td>--%>
-                    <td><a href="children?object_id=${objects.object_id}">${objects.name}</a></td>
-                </tr>
-            </c:forEach>
+        <c:forEach var="objects" items="${list}">
+            <tr>
+                <td><input id="object_id" type="checkbox" name="object_id"
+                           value="${objects.parent_id}_${objects.object_id}"></td>
+                <td>${objects.object_id}</td>
+                <c:choose>
+                    <c:when test="${objects.object_type_id=='4'}">
+                        <td>${objects.name}</td>
+                    </c:when>
+                    <c:when test="${objects.object_type_id=='5'}">
+                        <td>${objects.name}</td>
+                    </c:when>
+                    <c:when test="${objects.object_type_id=='6'}">
+                        <td>${objects.name}</td>
+                    </c:when>
+                    <c:otherwise>
+                        <td><a href="children?object_id=${objects.object_id}">${objects.name}</a></td>
+                    </c:otherwise>
+                </c:choose>
+
+            </tr>
+        </c:forEach>
         </tbody>
 
         <%ArrayList list = ((ArrayList) request.getAttribute("list")); %>
@@ -57,11 +89,12 @@
         <input type="hidden" name="parentId" value="<%=((LWObject)list.get(0)).getParent_id()%>"/>
         <% }%>
         <%} else {%>
+
         <input type="hidden" name="parentId" value="<%=request.getAttribute("list")%>"/>
         <%} %>
         <input type="submit" formaction="add" value="Add">
-        <input type="submit" formaction="edit" value="Edit">
-        <input type="submit" formaction="remove" value="Remove">
+        <input type="submit" formaction="edit" value="Edit" onclick="return edit_check()">
+        <input type="submit" formaction="remove" value="Remove" onclick="return show_alert()">
     </table>
 </form>
 
