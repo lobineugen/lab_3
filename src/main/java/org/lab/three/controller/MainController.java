@@ -4,14 +4,14 @@ import org.apache.log4j.Logger;
 import org.lab.three.beans.LWObject;
 import org.lab.three.dao.DAO;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpRequest;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -70,9 +70,17 @@ public class MainController {
     @RequestMapping("/create")
     public ModelAndView createNewObject(@RequestParam(value = "objectName") String objectName,
                                         @RequestParam(value = "parentId") String parentId,
-                                        @RequestParam(value = "objectType") String objectType) {
+                                        @RequestParam(value = "objectType") String objectType,
+                                        HttpServletRequest request) {
         LOGGER.debug("Creating new objects");
-        dao.createObject(objectName, parentId, objectType);
+        int object_id = dao.createObject(objectName, parentId, objectType);
+        Map<Integer, String> attr = dao.getAttrByObjectIdFromAOT(Integer.parseInt(objectType));
+        for (Map.Entry<Integer, String> temp : attr.entrySet()) {
+            if (request.getParameter(Integer.toString(temp.getKey())) != null) {
+                String value = request.getParameter(Integer.toString(temp.getKey()));
+                dao.updateParams(object_id,temp.getKey(),value);
+            }
+        }
         List<LWObject> list;
         if (parentId.equals("0")) {
             list = dao.getTopObject();
@@ -95,7 +103,7 @@ public class MainController {
                                    @RequestParam(value = "objectId") int objectId,
                                    HttpServletRequest request) {
         LOGGER.debug("Submiting edit");
-        ArrayList<Integer> attr = dao.getAttrByObjectId(objectId);
+        ArrayList<Integer> attr = dao.getAttrByObjectIdFromParams(objectId);
         for (Integer temp : attr) {
             if (request.getParameter(Integer.toString(temp)) != null) {
                 String value = request.getParameter(Integer.toString(temp));
@@ -105,4 +113,19 @@ public class MainController {
         List<LWObject> list = dao.changeNameById(objectId, name);
         return new ModelAndView("showAllObjects", "list", list);
     }
+
+    @RequestMapping(value = "/params", method = RequestMethod.GET)
+    public @ResponseBody
+    String params(@RequestParam(value = "ot") String ot) {
+        Map<Integer, String> map = dao.getAttrByObjectIdFromAOT(Integer.parseInt(ot));
+        StringBuilder code = new StringBuilder();
+        for (Map.Entry<Integer, String> temp : map.entrySet()) {
+            code.append("<p><label>").append(temp.getValue()).append(": ");
+            code.append("<input type=\"text\" name=\"").append(temp.getKey()).append("\" value=\"\" required>");
+            code.append("</label></p>");
+        }
+        return code.toString();
+    }
+
+
 }

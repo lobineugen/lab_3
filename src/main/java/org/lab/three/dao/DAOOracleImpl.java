@@ -135,9 +135,10 @@ public class DAOOracleImpl implements DAO {
     }
 
     @Override
-    public void createObject(String name, String parentId, String objectType) {
+    public int createObject(String name, String parentId, String objectType) {
         LOGGER.debug("Creating object");
         connect();
+        int object_id = getNextId();
         try {
             if (parentId.equals("0")) {
                 parentId = "null";
@@ -145,12 +146,13 @@ public class DAOOracleImpl implements DAO {
             if (objectType.equals("null")) {
                 objectType = "1";
             }
-            preparedStatement = connection.prepareStatement("insert into LW_OBJECTS VALUES (sss.nextVal," + parentId + "," + objectType + ",'" + name + "')");
+            preparedStatement = connection.prepareStatement("insert into LW_OBJECTS VALUES (" + object_id + "," + parentId + "," + objectType + ",'" + name + "')");
             resultSet = preparedStatement.executeQuery();
         } catch (SQLException e) {
             LOGGER.error("Exception while creating object", e);
         }
         disconnect();
+        return object_id;
     }
 
     @Override
@@ -272,7 +274,7 @@ public class DAOOracleImpl implements DAO {
     }
 
     @Override
-    public ArrayList<Integer> getAttrByObjectId(int objectId) {
+    public ArrayList<Integer> getAttrByObjectIdFromParams(int objectId) {
         connect();
         ArrayList<Integer> arrayList = new ArrayList<>();
         try {
@@ -298,7 +300,7 @@ public class DAOOracleImpl implements DAO {
                 preparedStatement = connection.prepareStatement("MERGE INTO lw_params p " +
                         "USING (SELECT object_id FROM lw_objects WHERE object_id = " + objectId + ") s " +
                         "ON (p.object_id = s.object_id AND p.attr_id = " + attr_id + ") " +
-                        "WHEN MATCHED THEN UPDATE SET p.value = '" + value + "'"+
+                        "WHEN MATCHED THEN UPDATE SET p.value = '" + value + "'" +
                         " WHEN NOT MATCHED THEN INSERT VALUES (s.object_id," + attr_id + ", '" + value + "')");
                 preparedStatement.executeUpdate();
             }
@@ -306,6 +308,40 @@ public class DAOOracleImpl implements DAO {
             LOGGER.error("Exception update params", e);
         }
         disconnect();
+    }
+
+    @Override
+    public Map<Integer, String> getAttrByObjectIdFromAOT(int object_type) {
+        connect();
+        Map<Integer, String> map = new HashMap<>();
+        try {
+            preparedStatement = connection.prepareStatement("select a.attr_id, a.name from lw_aot aot, lw_attr a\n " +
+                    " where aot.object_type_id = " + object_type +
+                    " and a.attr_id = aot.attr_id");
+            resultSet = preparedStatement.executeQuery();
+            while (resultSet.next()) {
+                map.put(resultSet.getInt("attr_id"), resultSet.getString("name"));
+            }
+        } catch (SQLException e) {
+            LOGGER.error("Exception update params", e);
+        }
+        disconnect();
+        return map;
+    }
+
+    @Override
+    public int getNextId() {
+        int id = 0;
+        try {
+            preparedStatement = connection.prepareStatement("SELECT sss.nextval AS id FROM dual");
+            resultSet = preparedStatement.executeQuery();
+            while (resultSet.next()) {
+                id = resultSet.getInt("id");
+            }
+        } catch (SQLException e) {
+            LOGGER.error("Exception get unique id", e);
+        }
+        return id;
     }
 
     private LWObject parseObject(ResultSet resultSet) throws SQLException {

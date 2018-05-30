@@ -24,18 +24,23 @@
         function show_alert() {
             var int = checkBoxChecked();
             if (int > 0) {
-                if (confirm("Do you really want to remove this objects?"))
+                if (confirm("Do you really want to removing this objects?"))
                     document.forms[0].submit();
                 else
                     return false;
             } else {
+                alert("Select one or more objects for removing!");
                 return false;
             }
 
         }
 
         function edit_check() {
-            return checkBoxChecked() === 1;
+            if(checkBoxChecked() !== 1) {
+                alert("Select only one object for editing!");
+                return false;
+            }
+            return true;
         }
 
 
