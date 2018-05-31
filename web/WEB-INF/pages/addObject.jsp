@@ -17,10 +17,16 @@
                 data : 'ot=' + document.getElementById("ot").value,
                 success : function(data) {
                     $('#parameters').html(data);
+                    $('.display').show();
                 }
             });
         };
     </script>
+    <style>
+        .display{
+            display: none;
+        }
+    </style>
 </head>
 <body>
 <form method="post">
@@ -39,7 +45,7 @@
         </select>
     </label>
     <div id="parameters"> </div>
-    <input type="submit" formaction="create" value="Create">
+    <input type="submit" formaction="create" value="Create" class="display">
 </form>
 
 </body>
