@@ -44,6 +44,15 @@
         }
 
 
+        function info_check() {
+            if(checkBoxChecked() !== 1) {
+                alert("Select only one object for see info!");
+                return false;
+            }
+            return true;
+        }
+
+
         function checkBoxChecked() {
             return $("input[name='object_id']:checked").length;
         }
@@ -89,10 +98,12 @@
         </c:forEach>
         </tbody>
 
-        <%ArrayList list = ((ArrayList) request.getAttribute("list")); %>
-        <% if (list.size() > 0) {%>
-        <input type="hidden" name="parentId" value="<%=((LWObject)list.get(0)).getParent_id()%>"/>
-        <% }%>
+            <%ArrayList list = ((ArrayList) request.getAttribute("list")); %>
+            <% if (list.size() > 0) {%>
+            <input type="hidden" name="parentId" value="<%=((LWObject)list.get(0)).getParent_id()%>"/>
+            <% } else { %>
+            <input type="hidden" name="parentId" value="0"/>
+            <%} %>
         <%} else {%>
 
         <input type="hidden" name="parentId" value="<%=request.getAttribute("list")%>"/>
@@ -100,6 +111,7 @@
         <input type="submit" formaction="add" value="Add">
         <input type="submit" formaction="edit" value="Edit" onclick="return edit_check()">
         <input type="submit" formaction="remove" value="Remove" onclick="return show_alert()">
+        <input type="submit" formaction="info" value="Info" onclick="return info_check()">
     </table>
 </form>
 

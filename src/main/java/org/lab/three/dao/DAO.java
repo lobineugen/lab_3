@@ -23,5 +23,5 @@ public interface DAO {
     void updateParams(int objectId, int attr_id, String value);
     Map<Integer,String> getAttrByObjectIdFromAOT(int object_type);
     int getNextId();
-
+    List<LWObject> getObjectsListByObject(int objectId);
 }

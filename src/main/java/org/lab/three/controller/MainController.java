@@ -127,5 +127,18 @@ public class MainController {
         return code.toString();
     }
 
+    @RequestMapping("/info")
+    public ModelAndView seeInfo(@RequestParam(value = "object_id") String objectId) {
+        LOGGER.debug("See info objects");
+        int id = Integer.parseInt(objectId.substring(objectId.indexOf("_") + 1, objectId.length()));
+        LWObject LWObject = dao.getObjectById(id);
+        return new ModelAndView("infoObject", "object", LWObject);
+    }
 
+    @RequestMapping("/back")
+    public ModelAndView back(@RequestParam(value = "objectId") String objectId) {
+        LOGGER.debug("Back");
+        List<LWObject> list = dao.getObjectsListByObject(Integer.parseInt(objectId));
+        return new ModelAndView("showAllObjects", "list", list);
+    }
 }

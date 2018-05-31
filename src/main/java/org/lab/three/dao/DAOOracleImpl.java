@@ -69,7 +69,6 @@ public class DAOOracleImpl implements DAO {
     }
 
     public List<LWObject> getChildren(int object_id) {
-        System.out.println("get children for - " + object_id);
         LOGGER.debug("Getting children objects");
         connect();
         List<LWObject> list = new ArrayList<>();
@@ -90,7 +89,6 @@ public class DAOOracleImpl implements DAO {
     @Override
     public List<LWObject> removeByID(int[] object_id, String parent_id) {
         LOGGER.debug("Removing object by ID");
-        System.out.println("parent id = " + parent_id);
         connect();
         List<LWObject> list = new ArrayList<>();
         StringBuilder query = new StringBuilder("(");
@@ -202,21 +200,7 @@ public class DAOOracleImpl implements DAO {
         try {
             preparedStatement = connection.prepareStatement("update lw_objects set name='" + name + "' where OBJECT_ID = " + objectId);
             preparedStatement.executeUpdate();
-            preparedStatement = connection.prepareStatement("select object_type_id from LW_OBJECTS where OBJECT_ID = " + objectId);
-            resultSet = preparedStatement.executeQuery();
-            int object_type_id = 0;
-            while (resultSet.next()) {
-                object_type_id = resultSet.getInt("object_type_id");
-            }
-            if (object_type_id == 1) {
-                list = getTopObject();
-            } else {
-                preparedStatement = connection.prepareStatement("select * from lw_objects where parent_id = (select parent_id from lw_objects where object_id = " + objectId + ")");
-                resultSet = preparedStatement.executeQuery();
-                while (resultSet.next()) {
-                    list.add(parseObject(resultSet));
-                }
-            }
+            list = getObjectsListByObject(objectId);
         } catch (SQLException e) {
             LOGGER.error("Exception while changing name by ID", e);
         }
@@ -284,7 +268,6 @@ public class DAOOracleImpl implements DAO {
             while (resultSet.next()) {
                 arrayList.add(resultSet.getInt("attr_id"));
             }
-            System.out.println(arrayList.size() + " size of array list with aot");
         } catch (SQLException e) {
             LOGGER.error("Exception get attr by object id", e);
         }
@@ -342,6 +325,33 @@ public class DAOOracleImpl implements DAO {
             LOGGER.error("Exception get unique id", e);
         }
         return id;
+    }
+
+    @Override
+    public List<LWObject> getObjectsListByObject(int objectId) {
+        connect();
+        List<LWObject> list = new ArrayList<>();
+        try {
+            preparedStatement = connection.prepareStatement("select object_type_id from LW_OBJECTS where OBJECT_ID = " + objectId);
+            resultSet = preparedStatement.executeQuery();
+            int object_type_id = 0;
+            while (resultSet.next()) {
+                object_type_id = resultSet.getInt("object_type_id");
+            }
+            if (object_type_id == 1) {
+                list = getTopObject();
+            } else {
+                preparedStatement = connection.prepareStatement("select * from lw_objects where parent_id = (select parent_id from lw_objects where object_id = " + objectId + ")");
+                resultSet = preparedStatement.executeQuery();
+                while (resultSet.next()) {
+                    list.add(parseObject(resultSet));
+                }
+            }
+        } catch (SQLException e) {
+            LOGGER.error("Exception get objectsт ", e);
+        }
+        disconnect();
+        return list;
     }
 
     private LWObject parseObject(ResultSet resultSet) throws SQLException {
