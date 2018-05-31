@@ -329,24 +329,33 @@ public class DAOOracleImpl implements DAO {
 
     @Override
     public List<LWObject> getObjectsListByObject(int objectId) {
-        connect();
+
         List<LWObject> list = new ArrayList<>();
         try {
-            preparedStatement = connection.prepareStatement("select object_type_id from LW_OBJECTS where OBJECT_ID = " + objectId);
-            resultSet = preparedStatement.executeQuery();
-            int object_type_id = 0;
-            while (resultSet.next()) {
-                object_type_id = resultSet.getInt("object_type_id");
-            }
-            if (object_type_id == 1) {
+            if (objectId == 0) {
                 list = getTopObject();
             } else {
-                preparedStatement = connection.prepareStatement("select * from lw_objects where parent_id = (select parent_id from lw_objects where object_id = " + objectId + ")");
+                connect();
+                preparedStatement = connection.prepareStatement("select object_type_id from LW_OBJECTS where OBJECT_ID = " + objectId);
                 resultSet = preparedStatement.executeQuery();
+                int object_type_id = 0;
                 while (resultSet.next()) {
-                    list.add(parseObject(resultSet));
+                    object_type_id = resultSet.getInt("object_type_id");
+                }
+                disconnect();
+                if (object_type_id == 1) {
+                    list = getTopObject();
+                } else {
+                    connect();
+                    preparedStatement = connection.prepareStatement("select * from lw_objects where parent_id = (select parent_id from lw_objects where object_id = " + objectId + ")");
+                    resultSet = preparedStatement.executeQuery();
+                    while (resultSet.next()) {
+                        list.add(parseObject(resultSet));
+                    }
+                    disconnect();
                 }
             }
+
         } catch (SQLException e) {
             LOGGER.error("Exception get objectsт ", e);
         }

@@ -19,8 +19,12 @@
             type="text/javascript"></script>
     <script type="text/javascript">
         $(document).ready(function(){
+            if($("#parentId").val() == 0 ){
+                $("#hidden").hide();
+            }
             $("#object_list").tablesorter({sortList: [[0, 1]]});
         });
+
         function show_alert() {
             var int = checkBoxChecked();
             if (int > 0) {
@@ -102,7 +106,7 @@
             <% if (list.size() > 0) {%>
             <input type="hidden" name="parentId" value="<%=((LWObject)list.get(0)).getParent_id()%>"/>
             <% } else { %>
-            <input type="hidden" name="parentId" value="0"/>
+            <input type="hidden" name="parentId" value="0" id="parentId"/>
             <%} %>
         <%} else {%>
 
@@ -112,6 +116,7 @@
         <input type="submit" formaction="edit" value="Edit" onclick="return edit_check()">
         <input type="submit" formaction="remove" value="Remove" onclick="return show_alert()">
         <input type="submit" formaction="info" value="Info" onclick="return info_check()">
+        <input type="submit" formaction="back" value="Previous" id="hidden">
     </table>
 </form>
 

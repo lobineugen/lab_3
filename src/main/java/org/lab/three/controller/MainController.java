@@ -136,9 +136,15 @@ public class MainController {
     }
 
     @RequestMapping("/back")
-    public ModelAndView back(@RequestParam(value = "objectId") String objectId) {
+    public ModelAndView back(HttpServletRequest request) {
         LOGGER.debug("Back");
-        List<LWObject> list = dao.getObjectsListByObject(Integer.parseInt(objectId));
+        String id;
+        if (request.getParameter("objectId") != null)  {
+            id = request.getParameter("objectId");
+        } else {
+            id = request.getParameter("parentId");
+        }
+        List<LWObject> list = dao.getObjectsListByObject(Integer.parseInt(id));
         return new ModelAndView("showAllObjects", "list", list);
     }
 }
