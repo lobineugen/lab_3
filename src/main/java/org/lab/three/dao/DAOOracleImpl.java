@@ -3,6 +3,7 @@ package org.lab.three.dao;
 import com.ibatis.common.jdbc.ScriptRunner;
 import org.apache.log4j.Logger;
 import org.lab.three.beans.LWObject;
+import org.lab.three.beans.Visit;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
@@ -11,7 +12,10 @@ import javax.sql.DataSource;
 import java.io.*;
 import java.net.URL;
 import java.sql.*;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.Date;
 
 public class DAOOracleImpl implements DAO {
     private Connection connection;
@@ -214,7 +218,7 @@ public class DAOOracleImpl implements DAO {
         connect();
         int count = 0;
         try {
-            preparedStatement = connection.prepareStatement("SELECT count(table_name) AS counts FROM user_tables WHERE table_name IN ('LW_PARAMS','LW_AOT','LW_ATTR','LW_OBJECTS','LW_OBJECT_TYPES')");
+            preparedStatement = connection.prepareStatement("SELECT count(table_name) AS counts FROM user_tables WHERE table_name IN ('LW_PARAMS','LW_AOT','LW_ATTR','LW_OBJECTS','LW_OBJECT_TYPES','LW_VISIT')");
             resultSet = preparedStatement.executeQuery();
             while (resultSet.next()) {
                 count = resultSet.getInt("counts");
@@ -357,7 +361,98 @@ public class DAOOracleImpl implements DAO {
             }
 
         } catch (SQLException e) {
-            LOGGER.error("Exception get objectsт ", e);
+            LOGGER.error("Exception get objects ", e);
+        }
+        disconnect();
+        return list;
+    }
+
+    @Override
+    public Map<Integer, String> getObjectsByObjectType(int objectType) {
+        Map<Integer, String> objects = new HashMap<>();
+        connect();
+        try {
+            preparedStatement = connection.prepareStatement("select object_id, name from LW_OBJECTS where OBJECT_TYPE_ID = " + objectType);
+            resultSet = preparedStatement.executeQuery();
+            while (resultSet.next()) {
+                objects.put(resultSet.getInt("object_id"), resultSet.getString("name"));
+            }
+        } catch (SQLException e) {
+            LOGGER.error("Exception get objects by object type id ", e);
+        }
+        disconnect();
+        return objects;
+    }
+
+    @Override
+    public Map<Integer, String> getStudentsByLessonId(int lessonId) {
+        Map<Integer, String> map = new HashMap<>();
+        connect();
+        try {
+            preparedStatement = connection.prepareStatement("SELECT o.object_id, o.name " +
+                    "FROM lw_params p, lw_objects o " +
+                    "WHERE p.attr_id = 9 AND p.value = '" + lessonId + "' AND p.object_id = o.object_id");
+            resultSet = preparedStatement.executeQuery();
+            while (resultSet.next()) {
+                map.put(resultSet.getInt("object_id"),
+                        resultSet.getString("name"));
+            }
+        } catch (SQLException e) {
+            LOGGER.error("Exception get students by lesson id ", e);
+        }
+        disconnect();
+        return map;
+    }
+
+    @Override
+    public void insertVisit(String lessonId, String objectId, String date, String value) {
+        connect();
+        try {
+            preparedStatement = connection.prepareStatement("MERGE INTO lw_visit d\n" +
+                    "USING (SELECT " + objectId + " AS object_id, " + lessonId + " AS lesson_id, '" + date + "' AS editDate, '" + value + "' AS mark FROM dual) s\n" +
+                    "ON (d.object_id = s.object_id AND d.lesson_id = s.lesson_id AND d.editDate = s.editDate)\n" +
+                    "WHEN MATCHED THEN UPDATE SET d.mark = s.mark\n" +
+                    "WHEN NOT MATCHED THEN INSERT VALUES (s.object_id,s.lesson_id, s.editDate, s.mark)");
+            preparedStatement.executeQuery();
+        } catch (SQLException e) {
+            LOGGER.error("Exception with merge into visit", e);
+        }
+        disconnect();
+    }
+
+    @Override
+    public List<Visit> getVisitByLessonId(int lessonId) {
+        List<Visit> list = new ArrayList<>();
+        connect();
+        try {
+            preparedStatement = connection.prepareStatement("select OBJECT_ID,LESSON_ID,EDITDATE,MARK from lw_visit where lesson_id = " + lessonId);
+            resultSet = preparedStatement.executeQuery();
+            while (resultSet.next()) {
+                list.add(new Visit(resultSet.getInt("object_id"),
+                        resultSet.getInt("lesson_id"),
+                        resultSet.getString("editDate"),
+                        resultSet.getString("mark")));
+            }
+        } catch (SQLException e) {
+            LOGGER.error("Exception with select from visit", e);
+        }
+        disconnect();
+        return list;
+    }
+
+    @Override
+    public List<String> getDistinctDateByLessonId(int lessonId) {
+        connect();
+        List<String> list = new ArrayList<>();
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-mm-dd");
+        try {
+            preparedStatement = connection.prepareStatement("select distinct editDate from lw_visit where LESSON_ID=" + lessonId + " order by to_date(editDate,'dd.mm.yyyy')");
+            resultSet = preparedStatement.executeQuery();
+            while (resultSet.next()) {
+                list.add(resultSet.getString("editDate"));
+            }
+        } catch (SQLException e) {
+            LOGGER.error("Exception with select from visit", e);
         }
         disconnect();
         return list;
@@ -379,8 +474,8 @@ public class DAOOracleImpl implements DAO {
         connect();
         Map<Integer, String> map = new HashMap<>();
         try {
-            preparedStatement = connection.prepareStatement("select object_type_id, name from lw_object_types" +
-                    " order by object_type_id");
+            preparedStatement = connection.prepareStatement("SELECT object_type_id, name FROM lw_object_types" +
+                    " ORDER BY object_type_id");
             resultSet = preparedStatement.executeQuery();
             while (resultSet.next()) {
                 map.put(resultSet.getInt("object_type_id"), resultSet.getString("name"));
@@ -399,7 +494,7 @@ public class DAOOracleImpl implements DAO {
         List<LWObject> list = new ArrayList<>();
         try {
             preparedStatement = connection.prepareStatement("select * from lw_objects where" +
-                    " name like '%" + objectName +  "%' and object_type_id = '" + objectTypeID + "'");
+                    " name like '%" + objectName + "%' and object_type_id = '" + objectTypeID + "'");
             resultSet = preparedStatement.executeQuery();
             while (resultSet.next()) {
                 list.add(parseObject(resultSet));

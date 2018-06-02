@@ -1,4 +1,5 @@
 drop table lw_params;
+drop table lw_visit;
 drop table lw_aot;
 drop table lw_attr;
 drop table lw_objects;
@@ -44,6 +45,15 @@ constraint params_attr_fk foreign key (attr_id) references lw_attr(attr_id),
 constraint params_objects_fk foreign key (object_id) references lw_objects(object_id) on delete cascade
 );
 
+create table lw_visit (
+object_id number,
+lesson_id number,
+editDate varchar2(20),
+mark varchar2(10),
+CONSTRAINT visit_object_fk FOREIGN KEY (object_id) REFERENCES lw_objects(object_id),
+CONSTRAINT visit_lesson_fk FOREIGN KEY (lesson_id) REFERENCES lw_objects(object_id)
+);
+
 CREATE SEQUENCE sss
   START WITH 100
   INCREMENT BY 1;
@@ -78,7 +88,7 @@ insert into lw_aot values (5,5);
 insert into lw_aot values (6,4);
 insert into lw_aot values (7,5);
 insert into lw_aot values (8,6);
-insert into lw_aot values (9,5);
+insert into lw_aot values (9,4);
 
 
 insert into lw_objects values (1,null,1,'SumDU');
@@ -114,35 +124,45 @@ insert into lw_params values (6,6,'1000');
 insert into lw_params values (7,4,'Sidorov');
 insert into lw_params values (7,5,'20');
 insert into lw_params values (7,6,'1100');
+insert into lw_params values (7,9,'16');
+insert into lw_params values (7,9,'17');
 insert into lw_params values (8,4,'Ivanov');
 insert into lw_params values (8,5,'18');
 insert into lw_params values (8,6,'1200');
+insert into lw_params values (8,9,'18');
+insert into lw_params values (8,9,'19');
+
 insert into lw_params values (9,4,'Korobov');
 insert into lw_params values (9,5,'19');
 insert into lw_params values (9,6,'1200');
+insert into lw_params values (9,9,'16');
+insert into lw_params values (9,9,'20');
 insert into lw_params values (10,4,'Somov');
 insert into lw_params values (10,5,'20');
 insert into lw_params values (10,6,'1100');
+insert into lw_params values (10,9,'17');
+
+insert into lw_params values (10,9,'19');
 insert into lw_params values (11,4,'Razin');
 insert into lw_params values (11,5,'40');
 insert into lw_params values (11,7,'5000');
-insert into lw_params values (11,9,'16');
+
 insert into lw_params values (12,4,'Gromov');
 insert into lw_params values (12,5,'45');
 insert into lw_params values (12,7,'7000');
-insert into lw_params values (12,9,'17');
+
 insert into lw_params values (13,4,'Vasiliev');
 insert into lw_params values (13,5,'50');
 insert into lw_params values (13,7,'6000');
-insert into lw_params values (13,9,'18');
+
 insert into lw_params values (14,4,'Nosov');
 insert into lw_params values (14,5,'52');
 insert into lw_params values (14,7,'6000');
-insert into lw_params values (14,9,'19');
+
 insert into lw_params values (15,4,'Krasnov');
 insert into lw_params values (15,5,'55');
 insert into lw_params values (15,7,'8000');
-insert into lw_params values (15,9,'20');
+
 insert into lw_params values (16,8,'ET-305');
 insert into lw_params values (17,8,'C-210');
 insert into lw_params values (18,8,'C-312');

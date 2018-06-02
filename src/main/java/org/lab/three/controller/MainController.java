@@ -2,6 +2,7 @@ package org.lab.three.controller;
 
 import org.apache.log4j.Logger;
 import org.lab.three.beans.LWObject;
+import org.lab.three.beans.Visit;
 import org.lab.three.dao.DAO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -12,9 +13,9 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 @Controller
 public class MainController {
@@ -23,7 +24,7 @@ public class MainController {
     @Autowired
     private DAO dao;
 
-    @RequestMapping("/sign")
+    @RequestMapping(value={"/home", "/sign"})
     public ModelAndView showObjects() {
         LOGGER.debug("Showing top objects");
         List<LWObject> list = dao.getTopObject();
@@ -148,6 +149,87 @@ public class MainController {
         return new ModelAndView("showAllObjects", "list", list);
     }
 
+
+    @RequestMapping("/visit")
+    public ModelAndView visitTable() {
+        LOGGER.debug("Visit");
+        Map<Integer, String> lessons = dao.getObjectsByObjectType(6);
+        return new ModelAndView("visitPage", "lessons", lessons);
+    }
+
+    @RequestMapping(value = "/lesson", method = RequestMethod.GET)
+    public @ResponseBody
+    String getStudents(@RequestParam(value = "lesson") int lessonId) throws ParseException {
+        LOGGER.debug("Lesson");
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-mm-dd");
+        StringBuilder code = new StringBuilder();
+        Map<Integer, String> students = dao.getStudentsByLessonId(lessonId);
+        List<Visit> list = dao.getVisitByLessonId(lessonId);
+        List<String> dateList = dao.getDistinctDateByLessonId(lessonId);
+        code.append("<table border='2' id='my-table'>").append("<tr><th>Name</th>");
+        for (String aDateSet : dateList) {
+            code.append("<td>");
+            code.append(aDateSet);
+            code.append("</td>");
+        }
+        code.append("</tr>");
+        if (students.size() > 0) {
+            int i = 1;
+            int count = 0;
+            for (Map.Entry<Integer, String> map : students.entrySet()) {
+                code.append("<tr><td>");
+                code.append("<input id='object").append(i++).append("' type='hidden' name='objectId' value='").append(map.getKey()).append("'>");
+                code.append(map.getValue());
+                code.append("</td>");
+                for (String date : dateList) {
+                    for (Visit visit : list) {
+                        if (visit.getDate().equals(date) && visit.getObjectId() == map.getKey()) {
+                            code.append("<td>");
+                            code.append("<input type='text' name='").append(map.getKey()).append("_").append(date).append("' value='").append(visit.getMark()).append("'>");
+                            code.append("</td>");
+                            count = 0;
+                            break;
+                        } else {
+                            count = 1;
+                        }
+                    }
+                    if (count == 1) {
+                        code.append("<td>");
+                        code.append("<input type='text' name='").append(map.getKey()).append("_").append(date).append("' value='").append("-").append("' readonly>");
+                        code.append("</td>");
+                        count = 0;
+                    }
+                }
+
+                code.append("</tr>");
+            }
+        } else {
+            code.append("Students not found for this lesson");
+        }
+        code.append("</table>");
+        return code.toString();
+    }
+
+    @RequestMapping("/saveVisit")
+    public ModelAndView saveVisit(HttpServletRequest request) {
+        LOGGER.debug("Save visit");
+        Map<String, String[]> map = request.getParameterMap();
+        String[] lessonId = map.get("lessons");
+        String[] objectIds = map.get("objectId");
+        Set<String> keySet = map.keySet();
+        for (String id : objectIds) {
+            for (Object aKeySet : keySet) {
+                String key = aKeySet.toString();
+                if (key.startsWith(id + "_")) {
+                    dao.insertVisit(lessonId[0], id, key.substring(key.indexOf("_") + 1, key.length()), map.get(key)[0]);
+                }
+            }
+        }
+        Map<Integer, String> lessons = dao.getObjectsByObjectType(6);
+        return new ModelAndView("visitPage", "lessons", lessons);
+    }
+
+
     @RequestMapping("/search")
     public ModelAndView searchObject() {
         LOGGER.debug("Serching new objects");
@@ -186,4 +268,6 @@ public class MainController {
         }
         return code.toString();
     }
+
+
 }

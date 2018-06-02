@@ -1,6 +1,7 @@
 package org.lab.three.dao;
 
 import org.lab.three.beans.LWObject;
+import org.lab.three.beans.Visit;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,4 +27,10 @@ public interface DAO {
     List<LWObject> getObjectsListByObject(int objectId);
     Map<Integer, String> getAllObjectTypes();
     List<LWObject> getLWObjectByNameAndType(String objectName, int objectTypeID);
+    Map<Integer,String> getObjectsByObjectType(int objectType);
+    Map<Integer,String> getStudentsByLessonId(int lessonId);
+    void insertVisit(String lessonId, String objectId, String date, String value);
+    List<Visit> getVisitByLessonId(int lessonId);
+    List<String> getDistinctDateByLessonId(int lessonId);
+
 }

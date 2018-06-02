@@ -15,7 +15,7 @@ public class Init implements ServletContextListener {
     public void contextInitialized(ServletContextEvent servletContextEvent) {
         LOGGER.debug("Initializing context");
         int count = dao.checkTables();
-        if (count<5) {
+        if (count<6) {
             dao.executeScript();
         }
     }

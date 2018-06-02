@@ -118,6 +118,8 @@
         <input type="submit" formaction="info" value="Info" onclick="return info_check()">
         <input type="submit" formaction="back" value="Previous" id="hidden">
         <input type="submit" formaction="search" value="Search">
+
+        <input type="submit" formaction="visit" value="Visit" id="hidden">
     </table>
 </form>
 
