@@ -24,4 +24,6 @@ public interface DAO {
     Map<Integer,String> getAttrByObjectIdFromAOT(int object_type);
     int getNextId();
     List<LWObject> getObjectsListByObject(int objectId);
+    Map<Integer, String> getAllObjectTypes();
+    List<LWObject> getLWObjectByNameAndType(String objectName, int objectTypeID);
 }

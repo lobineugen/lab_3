@@ -14,5 +14,5 @@ td {
     background: white;
 }
 a { 
-	cursor: url(images/sniper.cur), pointer; 
+	cursor: pointer;
 }

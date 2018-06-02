@@ -117,6 +117,7 @@
         <input type="submit" formaction="remove" value="Remove" onclick="return show_alert()">
         <input type="submit" formaction="info" value="Info" onclick="return info_check()">
         <input type="submit" formaction="back" value="Previous" id="hidden">
+        <input type="submit" formaction="search" value="Search">
     </table>
 </form>
 

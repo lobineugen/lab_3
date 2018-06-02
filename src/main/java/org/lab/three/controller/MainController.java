@@ -78,7 +78,7 @@ public class MainController {
         for (Map.Entry<Integer, String> temp : attr.entrySet()) {
             if (request.getParameter(Integer.toString(temp.getKey())) != null) {
                 String value = request.getParameter(Integer.toString(temp.getKey()));
-                dao.updateParams(object_id,temp.getKey(),value);
+                dao.updateParams(object_id, temp.getKey(), value);
             }
         }
         List<LWObject> list;
@@ -139,12 +139,51 @@ public class MainController {
     public ModelAndView back(HttpServletRequest request) {
         LOGGER.debug("Back");
         String id;
-        if (request.getParameter("objectId") != null)  {
+        if (request.getParameter("objectId") != null) {
             id = request.getParameter("objectId");
         } else {
             id = request.getParameter("parentId");
         }
         List<LWObject> list = dao.getObjectsListByObject(Integer.parseInt(id));
         return new ModelAndView("showAllObjects", "list", list);
+    }
+
+    @RequestMapping("/search")
+    public ModelAndView searchObject() {
+        LOGGER.debug("Serching new objects");
+        Map<Integer, String> allObjectTypes = dao.getAllObjectTypes();
+        return new ModelAndView("searchObject", "array", allObjectTypes);
+    }
+
+    @RequestMapping(value = "/find", method = RequestMethod.GET)
+    public @ResponseBody
+    String find(@RequestParam(value = "o") String name,
+                @RequestParam(value = "ot") int typeID) {
+        List<LWObject> list = dao.getLWObjectByNameAndType(name, typeID);
+        StringBuilder code = new StringBuilder();
+        if (!list.isEmpty()) {
+            code.append("<table border='2'>");
+            code.append("<tr>");
+            code.append("<th>№</th>");
+            code.append("<th>ObjectID</th>");
+            code.append("<th>ParentID</th>");
+            code.append("<th>Name</th>");
+            code.append("<th>ObjectTypeID</th>");
+            code.append("</tr>");
+            for (LWObject lwObject : list) {
+                code.append("<tr>");
+                code.append("<td><input id='object_id' type='checkbox' name='object_id'" +
+                        " value='" + lwObject.getParent_id() + "_" + lwObject.getObject_id() + "'></td>");
+                code.append("<td>" + lwObject.getObject_id() + "</td>");
+                code.append("<td>" + lwObject.getParent_id() + "</td>");
+                code.append("<td>" + lwObject.getName() + "</td>");
+                code.append("<td>" + lwObject.getObject_type_id() + "</td>");
+                code.append("</tr>");
+            }
+            code.append("</table>");
+        } else {
+            code.append("No matches found");
+        }
+        return code.toString();
     }
 }

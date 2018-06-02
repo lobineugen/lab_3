@@ -372,4 +372,42 @@ public class DAOOracleImpl implements DAO {
                 resultSet.getInt("object_type_id"),
                 resultSet.getString("name"), map);
     }
+
+    @Override
+    public Map<Integer, String> getAllObjectTypes() {
+        LOGGER.debug("Getting object type");
+        connect();
+        Map<Integer, String> map = new HashMap<>();
+        try {
+            preparedStatement = connection.prepareStatement("select object_type_id, name from lw_object_types" +
+                    " order by object_type_id");
+            resultSet = preparedStatement.executeQuery();
+            while (resultSet.next()) {
+                map.put(resultSet.getInt("object_type_id"), resultSet.getString("name"));
+            }
+        } catch (SQLException e) {
+            LOGGER.error("Exception while getting all object types", e);
+        }
+        disconnect();
+        return map;
+    }
+
+    @Override
+    public List<LWObject> getLWObjectByNameAndType(String objectName, int objectTypeID) {
+        LOGGER.debug("Getting object");
+        connect();
+        List<LWObject> list = new ArrayList<>();
+        try {
+            preparedStatement = connection.prepareStatement("select * from lw_objects where" +
+                    " name like '%" + objectName +  "%' and object_type_id = '" + objectTypeID + "'");
+            resultSet = preparedStatement.executeQuery();
+            while (resultSet.next()) {
+                list.add(parseObject(resultSet));
+            }
+        } catch (SQLException e) {
+            LOGGER.error("Exception while getting object", e);
+        }
+        disconnect();
+        return list;
+    }
 }
