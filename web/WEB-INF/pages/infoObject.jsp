@@ -16,7 +16,7 @@
     <%LWObject object = (LWObject) request.getAttribute("object"); %>
     <p><label>
         Object id:
-        <input type="text" name="objectId" value="<%=object.getObject_id()%>" readonly>
+        <input type="text" name="objectId" value="<%=object.getObjectID()%>" readonly>
     </label></p>
     <p><label>
         Name:

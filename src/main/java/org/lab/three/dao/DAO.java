@@ -9,23 +9,41 @@ import java.util.Map;
 
 public interface DAO {
     void connect();
+
     void disconnect();
+
     List<LWObject> getTopObject();
-    List<LWObject> getChildren(int object_id);
-    List<LWObject> removeByID(int[] object_id, String parent_id);
+
+    List<LWObject> getChildren(int objectID);
+
+    List<LWObject> removeByID(int[] objectID, String parentID);
+
     int createObject(String name, String parentId, String objectType);
-    Map<Integer,String> getObjectTypes(int parentId);
+
+    Map<Integer, String> getObjectTypes(int parentId);
+
     LWObject getObjectById(int objectId);
+
     List<LWObject> changeNameById(int objectId, String name);
+
     int checkTables();
+
     void executeScript();
+
     Map<String, String> getParamsById(int objectId);
-    ArrayList<Integer> getAttrByObjectIdFromParams(int objectId);
+
+    List<Integer> getAttrByObjectIdFromParams(int objectId);
+
     void updateParams(int objectId, int attr_id, String value);
-    Map<Integer,String> getAttrByObjectIdFromAOT(int object_type);
+
+    Map<Integer, String> getAttrByObjectIdFromAOT(int objectType);
+
     int getNextId();
+
     List<LWObject> getObjectsListByObject(int objectId);
+
     Map<Integer, String> getAllObjectTypes();
+
     List<LWObject> getLWObjectByNameAndType(String objectName, int objectTypeID);
     Map<Integer,String> getObjectsByObjectType(int objectType);
     Map<Integer,String> getStudentsByLessonId(int lessonId);

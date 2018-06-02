@@ -9,7 +9,7 @@ import javax.servlet.ServletContextListener;
 
 public class Init implements ServletContextListener {
     private static final Logger LOGGER = Logger.getLogger(Init.class);
-    private DAO dao = new DAOOracleImpl();
+    private final DAO dao = new DAOOracleImpl();
 
     @Override
     public void contextInitialized(ServletContextEvent servletContextEvent) {
@@ -22,6 +22,5 @@ public class Init implements ServletContextListener {
 
     @Override
     public void contextDestroyed(ServletContextEvent servletContextEvent) {
-
     }
 }

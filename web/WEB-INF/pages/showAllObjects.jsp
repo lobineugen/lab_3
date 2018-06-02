@@ -1,6 +1,6 @@
 <%@ page import="org.lab.three.beans.LWObject" %>
 <%@ page import="java.util.ArrayList" %>
-<%@ page import="org.lab.three.beans.LWObject" %><%--
+<%--
   Created by IntelliJ IDEA.
   User: Lobin Eugene
   Date: 21.05.2018
@@ -81,20 +81,20 @@
         <c:forEach var="objects" items="${list}">
             <tr>
                 <td><input id="object_id" type="checkbox" name="object_id"
-                           value="${objects.parent_id}_${objects.object_id}"></td>
-                <td>${objects.object_id}</td>
+                           value="${objects.parentID}_${objects.objectID}"></td>
+                <td>${objects.objectID}</td>
                 <c:choose>
-                    <c:when test="${objects.object_type_id=='4'}">
+                    <c:when test="${objects.objectTypeID=='4'}">
                         <td>${objects.name}</td>
                     </c:when>
-                    <c:when test="${objects.object_type_id=='5'}">
+                    <c:when test="${objects.objectTypeID=='5'}">
                         <td>${objects.name}</td>
                     </c:when>
-                    <c:when test="${objects.object_type_id=='6'}">
+                    <c:when test="${objects.objectTypeID=='6'}">
                         <td>${objects.name}</td>
                     </c:when>
                     <c:otherwise>
-                        <td><a href="children?object_id=${objects.object_id}">${objects.name}</a></td>
+                        <td><a href="children?object_id=${objects.objectID}">${objects.name}</a></td>
                     </c:otherwise>
                 </c:choose>
 
@@ -104,7 +104,7 @@
 
             <%ArrayList list = ((ArrayList) request.getAttribute("list")); %>
             <% if (list.size() > 0) {%>
-            <input type="hidden" name="parentId" value="<%=((LWObject)list.get(0)).getParent_id()%>"/>
+            <input type="hidden" name="parentId" value="<%=((LWObject)list.get(0)).getParentID()%>"/>
             <% } else { %>
             <input type="hidden" name="parentId" value="0" id="parentId"/>
             <%} %>

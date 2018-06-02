@@ -21,17 +21,18 @@ public class DAOOracleImpl implements DAO {
     private Connection connection;
     private PreparedStatement preparedStatement;
     private ResultSet resultSet;
+    private static final String NAME = "name";
     private static final Logger LOGGER = Logger.getLogger(DAOOracleImpl.class);
 
     public void connect() {
         LOGGER.debug("Connecting to database");
-        Hashtable ht = new Hashtable();
-        ht.put(Context.INITIAL_CONTEXT_FACTORY, "weblogic.jndi.WLInitialContextFactory");
-        ht.put(Context.PROVIDER_URL, "t3://localhost:7001");
+        Hashtable hashtable = new Hashtable();
+        hashtable.put(Context.INITIAL_CONTEXT_FACTORY, "weblogic.jndi.WLInitialContextFactory");
+        hashtable.put(Context.PROVIDER_URL, "t3://localhost:7001");
         try {
-            Context ctx = new InitialContext(ht);
-            DataSource ds = (DataSource) ctx.lookup("datasourceLab");
-            connection = ds.getConnection();
+            Context context = new InitialContext(hashtable);
+            DataSource dataSource = (DataSource) context.lookup("datasourceLab");
+            connection = dataSource.getConnection();
             if (!connection.isClosed()) {
                 LOGGER.info("Connection successful");
             }
@@ -72,12 +73,12 @@ public class DAOOracleImpl implements DAO {
         return list;
     }
 
-    public List<LWObject> getChildren(int object_id) {
+    public List<LWObject> getChildren(int objectID) {
         LOGGER.debug("Getting children objects");
         connect();
         List<LWObject> list = new ArrayList<>();
         try {
-            preparedStatement = connection.prepareStatement("select * from LW_OBJECTS where PARENT_ID = " + object_id);
+            preparedStatement = connection.prepareStatement("select * from LW_OBJECTS where PARENT_ID = " + objectID);
             resultSet = preparedStatement.executeQuery();
             while (resultSet.next()) {
                 list.add(parseObject(resultSet));
@@ -91,7 +92,7 @@ public class DAOOracleImpl implements DAO {
     }
 
     @Override
-    public List<LWObject> removeByID(int[] object_id, String parent_id) {
+    public List<LWObject> removeByID(int[] object_id, String parentID) {
         LOGGER.debug("Removing object by ID");
         connect();
         List<LWObject> list = new ArrayList<>();
@@ -99,27 +100,27 @@ public class DAOOracleImpl implements DAO {
         for (int i = 0; i < object_id.length; i++) {
             query.append(object_id[i]);
             if (i != object_id.length - 1) {
-                query.append(",");
+                query.append(',');
             }
         }
-        query.append(")");
+        query.append(')');
         try {
             if (object_id.length > 0) {
                 preparedStatement = connection.prepareStatement("delete from lw_objects where object_id in " + query);
                 preparedStatement.executeUpdate();
             }
-            preparedStatement = connection.prepareStatement("select * from lw_objects where parent_id = " + parent_id);
+            preparedStatement = connection.prepareStatement("select * from lw_objects where parent_id = " + parentID);
             resultSet = preparedStatement.executeQuery();
             while (resultSet.next()) {
                 list.add(parseObject(resultSet));
             }
             String quer = "select * from lw_objects " +
-                    "where parent_id = (select parent_id from lw_objects where object_id = " + parent_id + ")";
-            if (parent_id.equals("0")) {
+                    "where parent_id = (select parent_id from lw_objects where object_id = " + parentID + ")";
+            if ("0".equals(parentID)) {
                 quer = "SELECT * FROM lw_objects " +
                         "WHERE parent_id IS NULL ";
             }
-            if (list.size() == 0) {
+            if (list.isEmpty()) {
                 preparedStatement = connection.prepareStatement(quer);
                 resultSet = preparedStatement.executeQuery();
                 while (resultSet.next()) {
@@ -140,21 +141,22 @@ public class DAOOracleImpl implements DAO {
     public int createObject(String name, String parentId, String objectType) {
         LOGGER.debug("Creating object");
         connect();
-        int object_id = getNextId();
+        int objectID = getNextId();
         try {
-            if (parentId.equals("0")) {
+            if ("0".equals(parentId)) {
                 parentId = "null";
             }
             if (objectType.equals("null")) {
                 objectType = "1";
             }
-            preparedStatement = connection.prepareStatement("insert into LW_OBJECTS VALUES (" + object_id + "," + parentId + "," + objectType + ",'" + name + "')");
+            preparedStatement = connection.prepareStatement("insert into LW_OBJECTS VALUES (" + objectID +
+                    "," + parentId + "," + objectType + ",'" + name + "')");
             resultSet = preparedStatement.executeQuery();
         } catch (SQLException e) {
             LOGGER.error("Exception while creating object", e);
         }
         disconnect();
-        return object_id;
+        return objectID;
     }
 
     @Override
@@ -167,7 +169,7 @@ public class DAOOracleImpl implements DAO {
                     "where parent_id = (select object_type_id from lw_objects where object_id = " + parentId + ")");
             resultSet = preparedStatement.executeQuery();
             while (resultSet.next()) {
-                map.put(resultSet.getInt("object_type_id"), resultSet.getString("name"));
+                map.put(resultSet.getInt("object_type_id"), resultSet.getString(NAME));
             }
 
         } catch (SQLException e) {
@@ -181,19 +183,19 @@ public class DAOOracleImpl implements DAO {
     public LWObject getObjectById(int objectId) {
         LOGGER.debug("Getting object by ID");
         connect();
-        LWObject LWObject = null;
+        LWObject lwObject = null;
         try {
             preparedStatement = connection.prepareStatement("select * from LW_OBJECTS where OBJECT_ID=" + objectId);
             resultSet = preparedStatement.executeQuery();
             while (resultSet.next()) {
-                LWObject = parseObject(resultSet);
+                lwObject = parseObject(resultSet);
             }
 
         } catch (SQLException e) {
             LOGGER.error("Exception while getting object by ID", e);
         }
         disconnect();
-        return LWObject;
+        return lwObject;
     }
 
     @Override
@@ -239,8 +241,12 @@ public class DAOOracleImpl implements DAO {
         try {
             Reader reader = new BufferedReader(new FileReader(script.getPath()));
             sr.runScript(reader);
-        } catch (Exception e) {
-            LOGGER.error("Exception while executing script", e);
+        } catch (SQLException e) {
+            LOGGER.error("SQLException while executing script", e);
+        } catch (FileNotFoundException e) {
+            LOGGER.error("FileNotFoundException while executing script", e);
+        } catch (IOException e) {
+            LOGGER.error("IOException while executing script", e);
         }
         disconnect();
     }
@@ -252,7 +258,7 @@ public class DAOOracleImpl implements DAO {
             preparedStatement = connection.prepareStatement("select a.attr_id,a.name, p.value from lw_params p, lw_attr a where a.attr_id = p.attr_id  and object_id = " + objectId);
             ResultSet resultSet = preparedStatement.executeQuery();
             while (resultSet.next()) {
-                arrays.put(resultSet.getInt("attr_id") + "_" + resultSet.getString("name"),
+                arrays.put(resultSet.getInt("attr_id") + "_" + resultSet.getString(NAME),
                         resultSet.getString("value"));
             }
         } catch (SQLException e) {
@@ -280,15 +286,15 @@ public class DAOOracleImpl implements DAO {
     }
 
     @Override
-    public void updateParams(int objectId, int attr_id, String value) {
+    public void updateParams(int objectId, int attrID, String value) {
         connect();
         try {
             if (!value.isEmpty()) {
                 preparedStatement = connection.prepareStatement("MERGE INTO lw_params p " +
                         "USING (SELECT object_id FROM lw_objects WHERE object_id = " + objectId + ") s " +
-                        "ON (p.object_id = s.object_id AND p.attr_id = " + attr_id + ") " +
+                        "ON (p.object_id = s.object_id AND p.attr_id = " + attrID + ") " +
                         "WHEN MATCHED THEN UPDATE SET p.value = '" + value + "'" +
-                        " WHEN NOT MATCHED THEN INSERT VALUES (s.object_id," + attr_id + ", '" + value + "')");
+                        " WHEN NOT MATCHED THEN INSERT VALUES (s.object_id," + attrID + ", '" + value + "')");
                 preparedStatement.executeUpdate();
             }
         } catch (SQLException e) {
@@ -298,16 +304,16 @@ public class DAOOracleImpl implements DAO {
     }
 
     @Override
-    public Map<Integer, String> getAttrByObjectIdFromAOT(int object_type) {
+    public Map<Integer, String> getAttrByObjectIdFromAOT(int objectType) {
         connect();
         Map<Integer, String> map = new HashMap<>();
         try {
             preparedStatement = connection.prepareStatement("select a.attr_id, a.name from lw_aot aot, lw_attr a\n " +
-                    " where aot.object_type_id = " + object_type +
+                    " where aot.object_type_id = " + objectType +
                     " and a.attr_id = aot.attr_id");
             resultSet = preparedStatement.executeQuery();
             while (resultSet.next()) {
-                map.put(resultSet.getInt("attr_id"), resultSet.getString("name"));
+                map.put(resultSet.getInt("attr_id"), resultSet.getString(NAME));
             }
         } catch (SQLException e) {
             LOGGER.error("Exception update params", e);
@@ -342,12 +348,12 @@ public class DAOOracleImpl implements DAO {
                 connect();
                 preparedStatement = connection.prepareStatement("select object_type_id from LW_OBJECTS where OBJECT_ID = " + objectId);
                 resultSet = preparedStatement.executeQuery();
-                int object_type_id = 0;
+                int objectTypeID = 0;
                 while (resultSet.next()) {
-                    object_type_id = resultSet.getInt("object_type_id");
+                    objectTypeID = resultSet.getInt("object_type_id");
                 }
                 disconnect();
-                if (object_type_id == 1) {
+                if (objectTypeID == 1) {
                     list = getTopObject();
                 } else {
                     connect();
@@ -465,7 +471,7 @@ public class DAOOracleImpl implements DAO {
         return new LWObject(object_id,
                 resultSet.getInt("parent_id"),
                 resultSet.getInt("object_type_id"),
-                resultSet.getString("name"), map);
+                resultSet.getString(NAME), map);
     }
 
     @Override
@@ -478,7 +484,7 @@ public class DAOOracleImpl implements DAO {
                     " ORDER BY object_type_id");
             resultSet = preparedStatement.executeQuery();
             while (resultSet.next()) {
-                map.put(resultSet.getInt("object_type_id"), resultSet.getString("name"));
+                map.put(resultSet.getInt("object_type_id"), resultSet.getString(NAME));
             }
         } catch (SQLException e) {
             LOGGER.error("Exception while getting all object types", e);

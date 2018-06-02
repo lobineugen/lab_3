@@ -3,9 +3,9 @@ package org.lab.three.beans;
 import java.util.Map;
 
 public class LWObject {
-    private int object_id;
-    private int parent_id;
-    private int object_type_id;
+    private int objectID;
+    private int parentID;
+    private int objectTypeID;
     private String name;
     private Map<String, String> params;
 
@@ -14,36 +14,36 @@ public class LWObject {
 
     }
 
-    public LWObject(int object_id, int parent_id, int object_type_id, String name, Map<String, String> params) {
-        this.object_id = object_id;
-        this.parent_id = parent_id;
-        this.object_type_id = object_type_id;
+    public LWObject(int objectID, int parentID, int objectTypeID, String name, Map<String, String> params) {
+        this.objectID = objectID;
+        this.parentID = parentID;
+        this.objectTypeID = objectTypeID;
         this.name = name;
         this.params = params;
     }
 
-    public int getObject_id() {
-        return object_id;
+    public int getObjectID() {
+        return objectID;
     }
 
-    public void setObject_id(int object_id) {
-        this.object_id = object_id;
+    public void setObjectID(int object_id) {
+        this.objectID = object_id;
     }
 
-    public int getParent_id() {
-        return parent_id;
+    public int getParentID() {
+        return parentID;
     }
 
-    public void setParent_id(int parent_id) {
-        this.parent_id = parent_id;
+    public void setParentID(int parent_id) {
+        this.parentID = parent_id;
     }
 
-    public int getObject_type_id() {
-        return object_type_id;
+    public int getObjectTypeID() {
+        return objectTypeID;
     }
 
-    public void setObject_type_id(int object_type_id) {
-        this.object_type_id = object_type_id;
+    public void setObjectTypeID(int object_type_id) {
+        this.objectTypeID = object_type_id;
     }
 
     public String getName() {
