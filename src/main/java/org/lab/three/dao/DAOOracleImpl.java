@@ -142,15 +142,16 @@ public class DAOOracleImpl implements DAO {
         connect();
         int objectID = getNextId();
         String objectT = objectType;
+        String parID = parentId;
         try {
-            if ("0".equals(parentId)) {
-                parentId = "null";
+            if ("0".equals(parID)) {
+                parID = "null";
             }
             if ("null".equals(objectT)) {
                 objectT = "1";
             }
             preparedStatement = connection.prepareStatement("insert into LW_OBJECTS VALUES (" + objectID +
-                    "," + parentId + "," + objectT + ",'" + name + "')");
+                    "," + parID + "," + objectT + ",'" + name + "')");
             resultSet = preparedStatement.executeQuery();
         } catch (SQLException e) {
             LOGGER.error("Exception while creating object", e);
@@ -465,9 +466,9 @@ public class DAOOracleImpl implements DAO {
 
     private LWObject parseObject(ResultSet resultSet) throws SQLException {
         LOGGER.debug("Parsing object");
-        int object_id = resultSet.getInt(OBJECT_ID);
-        Map<String, String> map = getParamsById(object_id);
-        return new LWObject(object_id,
+        int objectID = resultSet.getInt(OBJECT_ID);
+        Map<String, String> map = getParamsById(objectID);
+        return new LWObject(objectID,
                 resultSet.getInt("parent_id"),
                 resultSet.getInt(OBJECT_TYPE_ID),
                 resultSet.getString(NAME), map);

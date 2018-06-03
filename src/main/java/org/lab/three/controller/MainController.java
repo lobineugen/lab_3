@@ -127,15 +127,13 @@ public class MainController {
     public @ResponseBody
     String params(@RequestParam(value = "ot") String objectType) {
         Map<Integer, String> map = dao.getAttrByObjectIdFromAOT(Integer.parseInt(objectType));
-        StringBuilder code = new StringBuilder(50);
+        StringBuilder code = new StringBuilder(75);
         for (Map.Entry<Integer, String> temp : map.entrySet()) {
             code.append("<p><label>");
-            code.append(temp.getValue());
-            code.append(": ");
+            code.append(temp.getValue() + ": ");
             code.append("<input type=\"text\" name=\"");
             code.append(temp.getKey());
-            code.append("\" value=\"\" required>");
-            code.append("</label></p>");
+            code.append("\" value=\"\" required></label></p>");
         }
         return code.toString();
     }
@@ -173,19 +171,20 @@ public class MainController {
     public @ResponseBody
     String getStudents(@RequestParam(value = "lesson") int lessonId) {
         LOGGER.debug("Lesson");
-        StringBuilder code = new StringBuilder();
+        StringBuilder code = new StringBuilder(75);
         Map<Integer, String> students = dao.getStudentsByLessonId(lessonId);
         List<Visit> list = dao.getVisitByLessonId(lessonId);
         List<String> dateList = dao.getDistinctDateByLessonId(lessonId);
-        code.append("<table border='2' id='my-table'>");
-        code.append("<tr><th>Name</th>");
+        code.append("<table border='2' id='my-table'><tr><th>Name</th>");
         for (String aDateSet : dateList) {
             code.append("<td><div class='date'>");
             code.append(aDateSet);
             code.append("</div></td>");
         }
         code.append(CLOSE_TR);
-        if (!students.isEmpty()) {
+        if (students.isEmpty()) {
+            code.append("Students not found for this lesson");
+        } else {
             int numb = 1;
             int count = 0;
             for (Map.Entry<Integer, String> map : students.entrySet()) {
@@ -221,9 +220,7 @@ public class MainController {
                         code.append(map.getKey());
                         code.append('_');
                         code.append(date);
-                        code.append("' value='");
-                        code.append("-");
-                        code.append("' readonly>");
+                        code.append("' value='-' readonly>");
                         code.append(CLOSE_TD);
                         count = 0;
                     }
@@ -231,8 +228,6 @@ public class MainController {
 
                 code.append(CLOSE_TR);
             }
-        } else {
-            code.append("Students not found for this lesson");
         }
         code.append("</table>");
         return code.toString();
