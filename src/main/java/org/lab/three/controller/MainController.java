@@ -33,9 +33,11 @@ public class MainController {
     private DAO dao;
 
     @RequestMapping(value = {"/home", "/sign"})
-    public ModelAndView showObjects() {
+    public ModelAndView showObjects(HttpServletRequest request) {
         LOGGER.debug("Showing top objects");
         List<LWObject> list = dao.getTopObject();
+        String userName = request.getParameter("userName");
+        request.getSession().setAttribute("right", dao.getRightByUserName(userName));
         return new ModelAndView(SHOW_ALL_OBJECTS, LIST, list);
     }
 
@@ -113,10 +115,19 @@ public class MainController {
                                    HttpServletRequest request) {
         LOGGER.debug("Submiting edit");
         ArrayList<Integer> attr = (ArrayList<Integer>) dao.getAttrByObjectIdFromParams(objectId);
-        for (Integer temp : attr) {
-            if (request.getParameter(Integer.toString(temp)) != null) {
-                String value = request.getParameter(Integer.toString(temp));
-                dao.updateParams(objectId, temp, value);
+        Map<String, String[]> params = request.getParameterMap();
+        Set<String> keySet = params.keySet();
+        for (int temp : attr) {
+            for (String key : keySet) {
+                if (!("name").equals(key) && !("objectId").equals(key)) {
+                    if (Integer.parseInt(key) == temp && params.get(key) != null) {
+                        String[] value = params.get(key);
+                        for (String par : value) {
+                            dao.updateParams(objectId,temp,par);
+                        }
+                    }
+                }
+
             }
         }
         List<LWObject> list = dao.changeNameById(objectId, name);

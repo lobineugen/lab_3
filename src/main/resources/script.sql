@@ -4,6 +4,7 @@ drop table lw_aot;
 drop table lw_attr;
 drop table lw_objects;
 drop table lw_object_types;
+drop table lw_right;
 
 
 create table lw_object_types (
@@ -54,10 +55,20 @@ CONSTRAINT visit_object_fk FOREIGN KEY (object_id) REFERENCES lw_objects(object_
 CONSTRAINT visit_lesson_fk FOREIGN KEY (lesson_id) REFERENCES lw_objects(object_id)
 );
 
+
+create table lw_right (
+user_id number,
+name VARCHAR2(10),
+right VARCHAR2(20)
+);
+
 CREATE SEQUENCE sss
   START WITH 100
   INCREMENT BY 1;
 
+insert into lw_right values (1,'admin','FULL');
+insert into lw_right values (2,'teacher','EDIT');
+insert into lw_right values (3,'user','INFO');
 
 insert into lw_object_types values (1,null,'University');
 insert into lw_object_types values (2,1,'Group');

@@ -1,5 +1,7 @@
 package org.lab.three.dao;
 
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Multimap;
 import com.ibatis.common.jdbc.ScriptRunner;
 import org.apache.log4j.Logger;
 import org.lab.three.beans.LWObject;
@@ -221,7 +223,7 @@ public class DAOOracleImpl implements DAO {
         connect();
         int count = 0;
         try {
-            preparedStatement = connection.prepareStatement("SELECT count(table_name) AS counts FROM user_tables WHERE table_name IN ('LW_PARAMS','LW_AOT','LW_ATTR','LW_OBJECTS','LW_OBJECT_TYPES','LW_VISIT')");
+            preparedStatement = connection.prepareStatement("SELECT count(table_name) AS counts FROM user_tables WHERE table_name IN ('LW_PARAMS','LW_AOT','LW_ATTR','LW_OBJECTS','LW_OBJECT_TYPES','LW_VISIT','LW_RIGHT')");
             resultSet = preparedStatement.executeQuery();
             while (resultSet.next()) {
                 count = resultSet.getInt("counts");
@@ -253,8 +255,8 @@ public class DAOOracleImpl implements DAO {
     }
 
     @Override
-    public Map<String, String> getParamsById(int objectId) {
-        Map<String, String> arrays = new HashMap<>();
+    public Multimap<String,String> getParamsById(int objectId) {
+        Multimap<String,String> arrays = ArrayListMultimap.create();
         try {
             preparedStatement = connection.prepareStatement("select a.attr_id,a.name, p.value from lw_params p, lw_attr a where a.attr_id = p.attr_id  and object_id = " + objectId);
             ResultSet resultSet = preparedStatement.executeQuery();
@@ -262,6 +264,7 @@ public class DAOOracleImpl implements DAO {
                 arrays.put(resultSet.getInt("attr_id") + "_" + resultSet.getString(NAME),
                         resultSet.getString("value"));
             }
+
         } catch (SQLException e) {
             LOGGER.error("Exception get params by id ", e);
         }
@@ -295,7 +298,7 @@ public class DAOOracleImpl implements DAO {
                         "USING (SELECT object_id FROM lw_objects WHERE object_id = " + objectId + ") s " +
                         "ON (p.object_id = s.object_id AND p.attr_id = " + attrID + ") " +
                         "WHEN MATCHED THEN UPDATE SET p.value = '" + value + "'" +
-                        " WHEN NOT MATCHED THEN INSERT VALUES (s.object_id," + attrID + ", '" + value + "')");
+                        "WHEN NOT MATCHED THEN INSERT VALUES (s.object_id," + attrID + ", '" + value + "')");
                 preparedStatement.executeUpdate();
             }
         } catch (SQLException e) {
@@ -464,10 +467,32 @@ public class DAOOracleImpl implements DAO {
         return list;
     }
 
+    @Override
+    public String getRightByUserName(String name) {
+        connect();
+        String right = "";
+        try {
+            preparedStatement = connection.prepareStatement("select right from lw_right where name = '" + name + "'");
+            resultSet = preparedStatement.executeQuery();
+            while (resultSet.next()) {
+                right = resultSet.getString("right");
+            }
+            if (right.isEmpty()) {
+                preparedStatement = connection.prepareStatement("INSERT into LW_RIGHT values (" + getNextId() + ",'" + name + "','INFO')");
+                preparedStatement.executeUpdate();
+                right = "INFO";
+            }
+        } catch (SQLException e) {
+            LOGGER.error("Exception with select right for user", e);
+        }
+        disconnect();
+        return right;
+    }
+
     private LWObject parseObject(ResultSet resultSet) throws SQLException {
         LOGGER.debug("Parsing object");
         int objectID = resultSet.getInt(OBJECT_ID);
-        Map<String, String> map = getParamsById(objectID);
+        Multimap<String,String> map = getParamsById(objectID);
         return new LWObject(objectID,
                 resultSet.getInt("parent_id"),
                 resultSet.getInt(OBJECT_TYPE_ID),

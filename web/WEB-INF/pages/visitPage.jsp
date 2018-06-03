@@ -6,12 +6,14 @@
   To change this template use File | Settings | File Templates.
 --%>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page errorPage="errorPage.jsp" %>
 <html>
 <head>
     <title>Students visit</title>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/datejs/1.0/date.min.js"></script>
     <script type="text/javascript">
+
         function showStudents() {
             $.ajax({
                 url : 'lesson',
@@ -91,10 +93,14 @@
         </select>
     </label>
     <input type="button" value="Select" onclick="showStudents()">
-    <input type="date" name="date" id="date" class="display" >
-    <input type="button" onclick="addDate()" value="Add date" class="display">
+    <%if (session.getAttribute("right").equals("FULL") || session.getAttribute("right").equals("EDIT")) {%>
+        <input type="date" name="date" id="date" class="display" >
+        <input type="button" onclick="addDate()" value="Add date" class="display">
+    <% } %>
     <div id="table"></div>
-    <input type="submit" value="Save" class="display" formaction="saveVisit">
+    <%if (session.getAttribute("right").equals("FULL") || session.getAttribute("right").equals("EDIT")) {%>
+        <input type="submit" value="Save" class="display" formaction="saveVisit">
+    <%} %>
     <input type="submit" value="Home" formaction="home">
 </form>
 </body>

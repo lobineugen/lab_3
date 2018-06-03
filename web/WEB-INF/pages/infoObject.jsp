@@ -1,5 +1,7 @@
 <%@ page import="org.lab.three.beans.LWObject" %>
-<%@ page import="java.util.Map" %><%--
+<%@ page import="java.util.Map" %>
+<%@ page import="java.util.Set" %>
+<%@ page import="java.util.List" %><%--
   Created by IntelliJ IDEA.
   User: Lobin Eugene
   Date: 31.05.2018
@@ -7,6 +9,7 @@
   To change this template use File | Settings | File Templates.
 --%>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page errorPage="errorPage.jsp" %>
 <html>
 <head>
     <title>Object info</title>
@@ -23,14 +26,21 @@
         <input type="text" name="name" value="<%=object.getName()%>" readonly>
     </label></p>
     <p>Parameters:</p>
-    <%for (Map.Entry<String, String> params : object.getParams().entrySet()) {%>
-    <p><label>
-        <%int id = Integer.parseInt(params.getKey().substring(0, params.getKey().indexOf("_"))); %>
-        <%String name = params.getKey().substring(params.getKey().indexOf("_") + 1, params.getKey().length()); %>
-        <%=name%>
-        <input type="text" name="<%=id%>" value="<%=params.getValue()%>" readonly>
-    </label></p>
+    <% Set<String> keySet = object.getParams().keySet();
+        for (String key : keySet) {
+            int id = Integer.parseInt(key.substring(0, key.indexOf("_")));
+            String name = key.substring(key.indexOf("_") + 1, key.length());
+            List<String> list = (List<String>) object.getParams().get(key);
+            for (String temp : list) {%>
+            <p>
+                <label>
+                <%=name%>
+                <input type="text" name="<%=id%>" value="<%=temp%>" readonly>
+                </label>
+            </p>
+            <%} %>
     <%}%>
+
     <input type="submit" formaction="back" value="Back">
 </form>
 

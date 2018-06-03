@@ -1,5 +1,6 @@
 package org.lab.three.dao;
 
+import com.google.common.collect.Multimap;
 import org.lab.three.beans.LWObject;
 import org.lab.three.beans.Visit;
 import java.util.List;
@@ -17,7 +18,7 @@ public interface DAO {
     List<LWObject> changeNameById(int objectId, String name);
     int checkTables();
     void executeScript();
-    Map<String, String> getParamsById(int objectId);
+    Multimap<String,String> getParamsById(int objectId);
     List<Integer> getAttrByObjectIdFromParams(int objectId);
     void updateParams(int objectId, int attrID, String value);
     Map<Integer, String> getAttrByObjectIdFromAOT(int objectType);
@@ -30,4 +31,5 @@ public interface DAO {
     void insertVisit(String lessonId, String objectId, String date, String value);
     List<Visit> getVisitByLessonId(int lessonId);
     List<String> getDistinctDateByLessonId(int lessonId);
+    String getRightByUserName(String name);
 }

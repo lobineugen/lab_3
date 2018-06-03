@@ -9,6 +9,7 @@
 --%>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ page errorPage="errorPage.jsp" %>
 <html>
 <head>
     <title>Show all object</title>
@@ -112,9 +113,13 @@
 
         <input type="hidden" name="parentId" value="<%=request.getAttribute("list")%>"/>
         <%} %>
-        <input type="submit" formaction="add" value="Add">
-        <input type="submit" formaction="edit" value="Edit" onclick="return edit_check()">
-        <input type="submit" formaction="remove" value="Remove" onclick="return show_alert()">
+        <%if (session.getAttribute("right").equals("FULL")) {%>
+            <input type="submit" formaction="add" value="Add">
+            <input type="submit" formaction="remove" value="Remove" onclick="return show_alert()">
+            <input type="submit" formaction="edit" value="Edit" onclick="return edit_check()">
+        <%} else if(session.getAttribute("right").equals("EDIT")) {%>
+            <input type="submit" formaction="edit" value="Edit" onclick="return edit_check()">
+        <%} %>
         <input type="submit" formaction="info" value="Info" onclick="return info_check()">
         <input type="submit" formaction="back" value="Previous" id="hidden">
         <input type="submit" formaction="search" value="Search">

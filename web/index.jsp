@@ -11,10 +11,13 @@
     <title>Start page</title>
 </head>
 <body>
+<%session.invalidate();%>
+<%request.getSession(true);%>
+
 <form method="POST" action="sign">
     <label>
         Enter your name:
-        <input type="text" name="object_id"/>
+        <input type="text" name="userName" required/>
     </label>
     <input type="submit">
 </form>

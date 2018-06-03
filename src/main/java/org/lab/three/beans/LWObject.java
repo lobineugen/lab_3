@@ -1,5 +1,8 @@
 package org.lab.three.beans;
 
+import com.google.common.collect.Multimap;
+
+import java.util.List;
 import java.util.Map;
 
 public class LWObject {
@@ -7,14 +10,14 @@ public class LWObject {
     private int parentID;
     private int objectTypeID;
     private String name;
-    private Map<String, String> params;
+    private Multimap<String,String> params;
 
 
     LWObject() {
 
     }
 
-    public LWObject(int objectID, int parentID, int objectTypeID, String name, Map<String, String> params) {
+    public LWObject(int objectID, int parentID, int objectTypeID, String name, Multimap<String,String> params) {
         this.objectID = objectID;
         this.parentID = parentID;
         this.objectTypeID = objectTypeID;
@@ -54,11 +57,11 @@ public class LWObject {
         this.name = name;
     }
 
-    public Map<String, String> getParams() {
+    public Multimap<String,String> getParams() {
         return params;
     }
 
-    public void setParams(Map<String, String> params) {
+    public void setParams(Multimap<String,String> params) {
         this.params = params;
     }
 }
