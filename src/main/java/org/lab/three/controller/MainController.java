@@ -130,8 +130,8 @@ public class MainController {
         StringBuilder code = new StringBuilder(75);
         for (Map.Entry<Integer, String> temp : map.entrySet()) {
             code.append("<p><label>");
-            code.append(temp.getValue() + ": ");
-            code.append("<input type=\"text\" name=\"");
+            code.append(temp.getValue());
+            code.append(": <input type=\"text\" name=\"");
             code.append(temp.getKey());
             code.append("\" value=\"\" required></label></p>");
         }
@@ -171,7 +171,7 @@ public class MainController {
     public @ResponseBody
     String getStudents(@RequestParam(value = "lesson") int lessonId) {
         LOGGER.debug("Lesson");
-        StringBuilder code = new StringBuilder(75);
+        StringBuilder code = new StringBuilder(90);
         Map<Integer, String> students = dao.getStudentsByLessonId(lessonId);
         List<Visit> list = dao.getVisitByLessonId(lessonId);
         List<String> dateList = dao.getDistinctDateByLessonId(lessonId);
