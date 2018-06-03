@@ -22,5 +22,6 @@ public class Init implements ServletContextListener {
 
     @Override
     public void contextDestroyed(ServletContextEvent servletContextEvent) {
+        LOGGER.debug("Destroying context");
     }
 }

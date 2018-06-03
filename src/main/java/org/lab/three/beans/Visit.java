@@ -1,7 +1,5 @@
 package org.lab.three.beans;
 
-import java.util.Date;
-
 public class Visit {
     private int objectId;
     private int lessonId;

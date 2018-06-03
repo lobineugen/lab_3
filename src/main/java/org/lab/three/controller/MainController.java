@@ -267,7 +267,8 @@ public class MainController {
             code.append(CLOSE_TR);
             for (LWObject lwObject : list) {
                 code.append(OPEN_TR);
-                code.append(OPEN_TD + "<input id='object_id' type='checkbox' name='object_id' value='").append(lwObject.getParentID()).append("_").append(lwObject.getObjectID()).append("'>").append(CLOSE_TD);
+                code.append(OPEN_TD + "<input id='object_id' type='checkbox' name='object_id'" +
+                        " value='" + lwObject.getParentID() + "_" + lwObject.getObjectID() + "'>" + CLOSE_TD);
                 code.append(OPEN_TD + lwObject.getObjectID() + CLOSE_TD);
                 code.append(OPEN_TD + lwObject.getParentID() + CLOSE_TD);
                 code.append(OPEN_TD + lwObject.getName() + CLOSE_TD);

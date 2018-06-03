@@ -26,24 +26,24 @@ public class LWObject {
         return objectID;
     }
 
-    public void setObjectID(int object_id) {
-        this.objectID = object_id;
+    public void setObjectID(int objectID) {
+        this.objectID = objectID;
     }
 
     public int getParentID() {
         return parentID;
     }
 
-    public void setParentID(int parent_id) {
-        this.parentID = parent_id;
+    public void setParentID(int parentID) {
+        this.parentID = parentID;
     }
 
     public int getObjectTypeID() {
         return objectTypeID;
     }
 
-    public void setObjectTypeID(int object_type_id) {
-        this.objectTypeID = object_type_id;
+    public void setObjectTypeID(int objectTypeID) {
+        this.objectTypeID = objectTypeID;
     }
 
     public String getName() {
