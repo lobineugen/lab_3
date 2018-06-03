@@ -45,7 +45,7 @@
         <%HashMap<Integer, String> map = (HashMap<Integer, String>) request.getAttribute("list");%>
     <label>
         Enter object name:
-        <input type="text" name="object_name" id="o" required/>
+        <input type="text" name="object_name" id="o"/>
         Choose object type:
         <select name="object_type" id="ot">
             <% for(Map.Entry<Integer, String> entry : map.entrySet()) {%>

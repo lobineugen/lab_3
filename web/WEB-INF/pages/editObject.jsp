@@ -39,6 +39,10 @@
             }
         }
     </script>
+
+    <style>
+        <%@include file="/WEB-INF/css/styles.css"%>
+    </style>
 </head>
 <body>
 <form method="POST" id="editForm">
@@ -50,11 +54,11 @@
     <%}%>
     <p><label>
         Object id:
-        <input type="text" name="objectId" value="<%=object.getObjectID()%>" readonly>
+        <input type="text" name="objectId" value="<%=object.getObjectID()%>" class="lft" readonly>
     </label></p>
     <p><label>
         Name:
-        <input type="text" name="name" value="<%=object.getName()%>">
+        <input type="text" name="name" value="<%=object.getName()%>" class="lft">
     </label></p>
     <p>Parameters:</p>
     <% Set<String> keySet = object.getParams().keySet();
@@ -66,7 +70,7 @@
     <p>
         <label>
             <%=name%>
-            <input type="text" name="<%=id%>" value="<%=temp%>" >
+            <input type="text" name="<%=id%>" value="<%=temp%>" class="lft">
         </label>
     </p>
     <%} %>

@@ -38,7 +38,7 @@
             <p>
                 <label>
                 <%=name%>
-                <input type="text" name="<%=id%>" value="<%=temp%>" readonly>
+                <input type="text" name="<%=id%>" value="<%=temp%>" class="lft" readonly>
                 </label>
             </p>
             <%} %>

@@ -144,7 +144,7 @@ public class MainController {
             code.append(temp.getValue());
             code.append(": <input type=\"text\" name=\"");
             code.append(temp.getKey());
-            code.append("\" value=\"\" required></label></p>");
+            code.append("\" value=\"\" class='lft' required></label></p>");
         }
         return code.toString();
     }
