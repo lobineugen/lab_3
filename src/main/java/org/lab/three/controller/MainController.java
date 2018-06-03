@@ -272,7 +272,7 @@ public class MainController {
         } else {
             code.append("<table border='2'>");
             code.append(OPEN_TR);
-            code.append(OPEN_TH + "№" + CLOSE_TH);
+            code.append(OPEN_TH + "N" + CLOSE_TH);
             code.append(OPEN_TH + "ObjectID" + CLOSE_TH);
             code.append(OPEN_TH + "ParentID" + CLOSE_TH);
             code.append(OPEN_TH + "Name" + CLOSE_TH);

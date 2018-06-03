@@ -16,3 +16,12 @@ td {
 a { 
 	cursor: pointer;
 }
+.lft {
+    left: 90px;
+    position: absolute;
+}
+
+.lft2 {
+    left: 240px;
+    position: absolute;
+}
