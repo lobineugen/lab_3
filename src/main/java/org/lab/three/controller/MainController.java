@@ -13,8 +13,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.*;
 
 @Controller
@@ -26,40 +24,43 @@ public class MainController {
     public static final String CLOSE_TH = "</th>";
     public static final String OPEN_TD = "<td>";
     public static final String CLOSE_TD = "</td>";
+    public static final String OBJ_ID = "objectId";
     public static final String LIST = "list";
+    public static final String SHOW_ALL_OBJECTS = "showAllObjects";
+    public static final String OBJECT_ID = "object_id";
 
     @Autowired
     private DAO dao;
 
-    @RequestMapping(value={"/home", "/sign"})
+    @RequestMapping(value = {"/home", "/sign"})
     public ModelAndView showObjects() {
         LOGGER.debug("Showing top objects");
         List<LWObject> list = dao.getTopObject();
-        return new ModelAndView("showAllObjects", LIST, list);
+        return new ModelAndView(SHOW_ALL_OBJECTS, LIST, list);
     }
 
     @RequestMapping("/children")
-    public ModelAndView showChildren(@RequestParam(value = "object_id") String objectID) {
+    public ModelAndView showChildren(@RequestParam(value = OBJECT_ID) String objectID) {
         LOGGER.debug("Showing children");
-        int id = Integer.parseInt(objectID.substring(objectID.lastIndexOf("_") + 1, objectID.length()));
+        int id = Integer.parseInt(objectID.substring(objectID.lastIndexOf('_') + 1, objectID.length()));
         List<LWObject> list = dao.getChildren(id);
         if (list.isEmpty()) {
-            return new ModelAndView("showAllObjects", LIST, objectID);
+            return new ModelAndView(SHOW_ALL_OBJECTS, LIST, objectID);
         }
-        return new ModelAndView("showAllObjects", LIST, list);
+        return new ModelAndView(SHOW_ALL_OBJECTS, LIST, list);
     }
 
     @RequestMapping("/remove")
-    public ModelAndView removeObject(@RequestParam(value = "object_id") String... arrays) {
+    public ModelAndView removeObject(@RequestParam(value = OBJECT_ID) String... arrays) {
         LOGGER.debug("Removing objects");
         int[] objectIdArray = new int[arrays.length];
-        String parent_id = "0";
+        String parentID = "0";
         for (int i = 0; i < arrays.length; i++) {
-            objectIdArray[i] = Integer.parseInt(arrays[i].substring(arrays[i].indexOf("_") + 1, arrays[i].length()));
-            parent_id = arrays[i].substring(0, arrays[i].indexOf("_"));
+            objectIdArray[i] = Integer.parseInt(arrays[i].substring(arrays[i].indexOf('_') + 1, arrays[i].length()));
+            parentID = arrays[i].substring(0, arrays[i].indexOf('_'));
         }
-        List<LWObject> list = dao.removeByID(objectIdArray, parent_id);
-        return new ModelAndView("showAllObjects", LIST, list);
+        List<LWObject> list = dao.removeByID(objectIdArray, parentID);
+        return new ModelAndView(SHOW_ALL_OBJECTS, LIST, list);
     }
 
     @RequestMapping("/add")
@@ -95,20 +96,20 @@ public class MainController {
         } else {
             list = dao.getChildren(Integer.parseInt(parentId));
         }
-        return new ModelAndView("showAllObjects", LIST, list);
+        return new ModelAndView(SHOW_ALL_OBJECTS, LIST, list);
     }
 
     @RequestMapping("/edit")
-    public ModelAndView editObject(@RequestParam(value = "object_id") String objectId) {
+    public ModelAndView editObject(@RequestParam(value = OBJECT_ID) String objectId) {
         LOGGER.debug("Editing objects");
-        int id = Integer.parseInt(objectId.substring(objectId.indexOf("_") + 1, objectId.length()));
+        int id = Integer.parseInt(objectId.substring(objectId.indexOf('_') + 1, objectId.length()));
         LWObject lwObject = dao.getObjectById(id);
         return new ModelAndView("editObject", "object", lwObject);
     }
 
     @RequestMapping("/submitEdit")
     public ModelAndView submitEdit(@RequestParam(value = "name") String name,
-                                   @RequestParam(value = "objectId") int objectId,
+                                   @RequestParam(value = OBJ_ID) int objectId,
                                    HttpServletRequest request) {
         LOGGER.debug("Submiting edit");
         ArrayList<Integer> attr = (ArrayList<Integer>) dao.getAttrByObjectIdFromParams(objectId);
@@ -119,14 +120,14 @@ public class MainController {
             }
         }
         List<LWObject> list = dao.changeNameById(objectId, name);
-        return new ModelAndView("showAllObjects", LIST, list);
+        return new ModelAndView(SHOW_ALL_OBJECTS, LIST, list);
     }
 
     @RequestMapping(value = "/params", method = RequestMethod.GET)
     public @ResponseBody
     String params(@RequestParam(value = "ot") String objectType) {
         Map<Integer, String> map = dao.getAttrByObjectIdFromAOT(Integer.parseInt(objectType));
-        StringBuilder code = new StringBuilder();
+        StringBuilder code = new StringBuilder(50);
         for (Map.Entry<Integer, String> temp : map.entrySet()) {
             code.append("<p><label>");
             code.append(temp.getValue());
@@ -140,24 +141,24 @@ public class MainController {
     }
 
     @RequestMapping("/info")
-    public ModelAndView seeInfo(@RequestParam(value = "object_id") String objectID) {
+    public ModelAndView seeInfo(@RequestParam(value = OBJECT_ID) String objectID) {
         LOGGER.debug("See info objects");
-        int id = Integer.parseInt(objectID.substring(objectID.indexOf("_") + 1, objectID.length()));
-        LWObject LWObject = dao.getObjectById(id);
-        return new ModelAndView("infoObject", "object", LWObject);
+        int id = Integer.parseInt(objectID.substring(objectID.indexOf('_') + 1, objectID.length()));
+        LWObject lwObject = dao.getObjectById(id);
+        return new ModelAndView("infoObject", "object", lwObject);
     }
 
     @RequestMapping("/back")
     public ModelAndView back(HttpServletRequest request) {
         LOGGER.debug("Back");
         String id;
-        if (request.getParameter("objectId") == null) {
+        if (request.getParameter(OBJ_ID) == null) {
             id = request.getParameter("parentId");
         } else {
-            id = request.getParameter("objectId");
+            id = request.getParameter(OBJ_ID);
         }
         List<LWObject> list = dao.getObjectsListByObject(Integer.parseInt(id));
-        return new ModelAndView("showAllObjects", LIST, list);
+        return new ModelAndView(SHOW_ALL_OBJECTS, LIST, list);
     }
 
 
@@ -172,32 +173,42 @@ public class MainController {
     public @ResponseBody
     String getStudents(@RequestParam(value = "lesson") int lessonId) {
         LOGGER.debug("Lesson");
-        SimpleDateFormat format = new SimpleDateFormat("yyyy-mm-dd");
         StringBuilder code = new StringBuilder();
         Map<Integer, String> students = dao.getStudentsByLessonId(lessonId);
         List<Visit> list = dao.getVisitByLessonId(lessonId);
         List<String> dateList = dao.getDistinctDateByLessonId(lessonId);
-        code.append("<table border='2' id='my-table'>").append("<tr><th>Name</th>");
+        code.append("<table border='2' id='my-table'>");
+        code.append("<tr><th>Name</th>");
         for (String aDateSet : dateList) {
             code.append("<td><div class='date'>");
             code.append(aDateSet);
             code.append("</div></td>");
         }
-        code.append("</tr>");
-        if (students.size() > 0) {
-            int i = 1;
+        code.append(CLOSE_TR);
+        if (!students.isEmpty()) {
+            int numb = 1;
             int count = 0;
             for (Map.Entry<Integer, String> map : students.entrySet()) {
-                code.append("<tr><td>");
-                code.append("<input id='object").append(i++).append("' type='hidden' name='objectId' value='").append(map.getKey()).append("'>");
+                code.append(OPEN_TR + OPEN_TD);
+                code.append("<input id='object");
+                code.append(numb++);
+                code.append("' type='hidden' name='objectId' value='");
+                code.append(map.getKey());
+                code.append("'>");
                 code.append(map.getValue());
-                code.append("</td>");
+                code.append(CLOSE_TD);
                 for (String date : dateList) {
                     for (Visit visit : list) {
                         if (visit.getDate().equals(date) && visit.getObjectId() == map.getKey()) {
-                            code.append("<td>");
-                            code.append("<input type='text' name='").append(map.getKey()).append("_").append(date).append("' value='").append(visit.getMark()).append("'>");
-                            code.append("</td>");
+                            code.append(OPEN_TD);
+                            code.append("<input type='text' name='");
+                            code.append(map.getKey());
+                            code.append('_');
+                            code.append(date);
+                            code.append("' value='");
+                            code.append(visit.getMark());
+                            code.append("'>");
+                            code.append(CLOSE_TD);
                             count = 0;
                             break;
                         } else {
@@ -205,14 +216,20 @@ public class MainController {
                         }
                     }
                     if (count == 1) {
-                        code.append("<td>");
-                        code.append("<input type='text' name='").append(map.getKey()).append("_").append(date).append("' value='").append("-").append("' readonly>");
-                        code.append("</td>");
+                        code.append(OPEN_TD);
+                        code.append("<input type='text' name='");
+                        code.append(map.getKey());
+                        code.append('_');
+                        code.append(date);
+                        code.append("' value='");
+                        code.append("-");
+                        code.append("' readonly>");
+                        code.append(CLOSE_TD);
                         count = 0;
                     }
                 }
 
-                code.append("</tr>");
+                code.append(CLOSE_TR);
             }
         } else {
             code.append("Students not found for this lesson");
@@ -226,13 +243,14 @@ public class MainController {
         LOGGER.debug("Save visit");
         Map<String, String[]> map = request.getParameterMap();
         String[] lessonId = map.get("lessons");
-        String[] objectIds = map.get("objectId");
+        String[] objectIds = map.get(OBJ_ID);
         Set<String> keySet = map.keySet();
         for (String id : objectIds) {
             for (Object aKeySet : keySet) {
                 String key = aKeySet.toString();
-                if (key.startsWith(id + "_")) {
-                    dao.insertVisit(lessonId[0], id, key.substring(key.indexOf("_") + 1, key.length()), map.get(key)[0]);
+                if (key.startsWith(id + '_')) {
+                    dao.insertVisit(lessonId[0], id, key.substring(key.indexOf('_') + 1, key.length()),
+                            map.get(key)[0]);
                 }
             }
         }
@@ -259,7 +277,7 @@ public class MainController {
         } else {
             code.append("<table border='2'>");
             code.append(OPEN_TR);
-            code.append(OPEN_TH + " № " + CLOSE_TH);
+            code.append(OPEN_TH + "№" + CLOSE_TH);
             code.append(OPEN_TH + "ObjectID" + CLOSE_TH);
             code.append(OPEN_TH + "ParentID" + CLOSE_TH);
             code.append(OPEN_TH + "Name" + CLOSE_TH);
@@ -268,7 +286,7 @@ public class MainController {
             for (LWObject lwObject : list) {
                 code.append(OPEN_TR);
                 code.append(OPEN_TD + "<input id='object_id' type='checkbox' name='object_id'" +
-                        " value='" + lwObject.getParentID() + "_" + lwObject.getObjectID() + "'>" + CLOSE_TD);
+                        " value='" + lwObject.getParentID() + '_' + lwObject.getObjectID() + "'>" + CLOSE_TD);
                 code.append(OPEN_TD + lwObject.getObjectID() + CLOSE_TD);
                 code.append(OPEN_TD + lwObject.getParentID() + CLOSE_TD);
                 code.append(OPEN_TD + lwObject.getName() + CLOSE_TD);
@@ -279,6 +297,4 @@ public class MainController {
         }
         return code.toString();
     }
-
-
 }

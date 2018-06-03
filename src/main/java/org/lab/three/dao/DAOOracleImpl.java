@@ -12,7 +12,6 @@ import javax.sql.DataSource;
 import java.io.*;
 import java.net.URL;
 import java.sql.*;
-import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class DAOOracleImpl implements DAO {
@@ -142,12 +141,12 @@ public class DAOOracleImpl implements DAO {
         LOGGER.debug("Creating object");
         connect();
         int objectID = getNextId();
-        String objectT = null;
+        String objectT = objectType;
         try {
             if ("0".equals(parentId)) {
                 parentId = "null";
             }
-            if ("null".equals(objectType)) {
+            if ("null".equals(objectT)) {
                 objectT = "1";
             }
             preparedStatement = connection.prepareStatement("insert into LW_OBJECTS VALUES (" + objectID +
