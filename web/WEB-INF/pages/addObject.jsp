@@ -28,6 +28,7 @@
         .display{
             display: none;
         }
+        <%@include file="/WEB-INF/css/styles.css"%>
     </style>
 </head>
 <body>
@@ -35,9 +36,9 @@
     <%ArrayList<String> array = (ArrayList<String>) request.getAttribute("array");%>
     <label>
         Name:
-        <input type="text" name="objectName" required>
+        <input type="text" name="objectName" class="lft" required>
         <input type="hidden" name="parentId" value="<%=array.get(0)%>">
-        <select name="objectType" id="ot" onselect="getAttr()" onclick="getAttr()">
+        <select name="objectType" id="ot" onselect="getAttr()" onclick="getAttr()" class="lft2">
             <% if (array.size() == 1) { %>
             <option value="1" selected>University</option>
             <% } %>
