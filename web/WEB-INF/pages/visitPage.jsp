@@ -9,7 +9,7 @@
 <html>
 <head>
     <title>Students visit</title>
-    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/datejs/1.0/date.min.js"></script>
     <script type="text/javascript">
         function showStudents() {
@@ -26,6 +26,11 @@
 
         function addDate() {
             var date = Date.parse(document.getElementById("date").value).toString("dd.MM.yyyy");
+            var array = document.getElementsByClassName("date");
+            if(collectionContains(array,date)) {
+                alert("You can not add this date, it is already in use!");
+                return;
+            }
             if (date !== '') {
                 var tbl = document.getElementById('my-table'), // table reference
                     i;
@@ -42,6 +47,15 @@
 
         }
 
+        function collectionContains(collection, searchText) {
+            for (var i = 0; i < collection.length; i++) {
+                if( collection[i].innerText.toLowerCase().indexOf(searchText) > -1 ) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
         function createCell(cell, text, name) {
             var checkbox = document.createElement('input');
             var div = document.createElement('div');
@@ -52,7 +66,7 @@
                 cell.appendChild(checkbox);
             } else {
                 div.appendChild(txt);
-                div.setAttribute('id','date');
+                div.setAttribute('class','date');
                 cell.appendChild(div);
             }
 

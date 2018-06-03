@@ -170,7 +170,7 @@ public class MainController {
 
     @RequestMapping(value = "/lesson", method = RequestMethod.GET)
     public @ResponseBody
-    String getStudents(@RequestParam(value = "lesson") int lessonId) throws ParseException {
+    String getStudents(@RequestParam(value = "lesson") int lessonId) {
         LOGGER.debug("Lesson");
         SimpleDateFormat format = new SimpleDateFormat("yyyy-mm-dd");
         StringBuilder code = new StringBuilder();
@@ -179,9 +179,9 @@ public class MainController {
         List<String> dateList = dao.getDistinctDateByLessonId(lessonId);
         code.append("<table border='2' id='my-table'>").append("<tr><th>Name</th>");
         for (String aDateSet : dateList) {
-            code.append("<td>");
+            code.append("<td><div class='date'>");
             code.append(aDateSet);
-            code.append("</td>");
+            code.append("</div></td>");
         }
         code.append("</tr>");
         if (students.size() > 0) {
@@ -259,7 +259,7 @@ public class MainController {
         } else {
             code.append("<table border='2'>");
             code.append(OPEN_TR);
-            code.append(OPEN_TH + "№" + CLOSE_TH);
+            code.append(OPEN_TH + " № " + CLOSE_TH);
             code.append(OPEN_TH + "ObjectID" + CLOSE_TH);
             code.append(OPEN_TH + "ParentID" + CLOSE_TH);
             code.append(OPEN_TH + "Name" + CLOSE_TH);
@@ -267,8 +267,7 @@ public class MainController {
             code.append(CLOSE_TR);
             for (LWObject lwObject : list) {
                 code.append(OPEN_TR);
-                code.append(OPEN_TD + "<input id='object_id' type='checkbox' name='object_id'" +
-                        " value='" + lwObject.getParentID() + "_" + lwObject.getObjectID() + "'>" + CLOSE_TD);
+                code.append(OPEN_TD + "<input id='object_id' type='checkbox' name='object_id' value='").append(lwObject.getParentID()).append("_").append(lwObject.getObjectID()).append("'>").append(CLOSE_TD);
                 code.append(OPEN_TD + lwObject.getObjectID() + CLOSE_TD);
                 code.append(OPEN_TD + lwObject.getParentID() + CLOSE_TD);
                 code.append(OPEN_TD + lwObject.getName() + CLOSE_TD);
