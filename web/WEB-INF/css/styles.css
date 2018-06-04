@@ -1,27 +1,46 @@
-table {
+table
+{
     background: white;
     color: black;
     border-spacing: 1px;
 }
-th, td {
+
+th, td
+{
     padding: 5px;
     text-align: center;
 }
-th {
+
+th
+{
     background: lightgray;
 }
-td {
+
+td
+{
     background: white;
 }
-a { 
+
+a
+{
 	cursor: pointer;
 }
-.lft {
+
+.lft
+{
     left: 90px;
     position: absolute;
 }
 
-.lft2 {
+.lft2
+{
     left: 240px;
     position: absolute;
+}
+
+.tbl,
+.tbl th,
+.tbl td
+{
+    border: 1px solid black;
 }

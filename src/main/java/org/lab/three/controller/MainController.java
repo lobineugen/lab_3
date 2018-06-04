@@ -186,7 +186,7 @@ public class MainController {
         Map<Integer, String> students = dao.getStudentsByLessonId(lessonId);
         List<Visit> list = dao.getVisitByLessonId(lessonId);
         List<String> dateList = dao.getDistinctDateByLessonId(lessonId);
-        code.append("<table border='2' id='my-table'><tr><th>Name</th>");
+        code.append("<table class='tbl' id='my-table'><tr><th>Name</th>");
         for (String aDateSet : dateList) {
             code.append("<td><div class='date'>");
             code.append(aDateSet);
@@ -281,7 +281,7 @@ public class MainController {
         if (list.isEmpty()) {
             code.append("No matches found");
         } else {
-            code.append("<table border='2'>");
+            code.append("<table class='tbl'>");
             code.append(OPEN_TR);
             code.append(OPEN_TH + "N" + CLOSE_TH);
             code.append(OPEN_TH + "ObjectID" + CLOSE_TH);
