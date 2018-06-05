@@ -2,9 +2,6 @@ package org.lab.three.beans;
 
 import com.google.common.collect.Multimap;
 
-import java.util.List;
-import java.util.Map;
-
 public class LWObject {
     private int objectID;
     private int parentID;

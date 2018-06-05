@@ -5,6 +5,7 @@ drop table lw_attr;
 drop table lw_objects;
 drop table lw_object_types;
 drop table lw_right;
+drop sequence sss;
 
 
 create table lw_object_types (
@@ -58,7 +59,7 @@ CONSTRAINT visit_lesson_fk FOREIGN KEY (lesson_id) REFERENCES lw_objects(object_
 
 create table lw_right (
 user_id number,
-name VARCHAR2(10),
+name VARCHAR2(25),
 right VARCHAR2(20)
 );
 

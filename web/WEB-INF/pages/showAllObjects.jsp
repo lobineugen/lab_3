@@ -72,10 +72,9 @@
         <thead>
         <tr>
             <th>№</th>
-            <th><a>object_id</a></th>
-            <th><a>name</a></th>
+            <th><a>Icon</a></th>
+            <th><a>Name</a></th>
         </tr>
-
         </thead>
         <tbody>
         <% if (request.getAttribute("list") instanceof ArrayList) {%>
@@ -83,7 +82,28 @@
             <tr>
                 <td><input id="object_id" type="checkbox" name="object_id"
                            value="${objects.parentID}_${objects.objectID}"></td>
-                <td>${objects.objectID}</td>
+                <td>
+                    <c:choose>
+                        <c:when test="${objects.objectTypeID=='1'}">
+                            <img src="<c:url value="/resources/images/univer.png" />" class="icon"/>
+                        </c:when>
+                        <c:when test="${objects.objectTypeID=='2'}">
+                            <img src="<c:url value="/resources/images/group.png" />" class="icon"/>
+                        </c:when>
+                        <c:when test="${objects.objectTypeID=='3'}">
+                            <img src="<c:url value="/resources/images/department.png" />" class="icon"/>
+                        </c:when>
+                        <c:when test="${objects.objectTypeID=='4'}">
+                            <img src="<c:url value="/resources/images/stud.png" />" class="icon"/>
+                        </c:when>
+                        <c:when test="${objects.objectTypeID=='5'}">
+                            <img src="<c:url value="/resources/images/teacher.png" />" class="icon"/>
+                        </c:when>
+                        <c:when test="${objects.objectTypeID=='6'}">
+                            <img src="<c:url value="/resources/images/lesson.png" />" class="icon"/>
+                        </c:when>
+                    </c:choose>
+                </td>
                 <c:choose>
                     <c:when test="${objects.objectTypeID=='4'}">
                         <td>${objects.name}</td>

@@ -504,9 +504,9 @@ public class DAOOracleImpl implements DAO {
                 right = resultSet.getString("right");
             }
             if (right.isEmpty()) {
-                preparedStatement = connection.prepareStatement("INSERT INTO LW_RIGHT VALUES (?,?,'INFO')");
+                preparedStatement = null;
+                preparedStatement = connection.prepareStatement("INSERT INTO LW_RIGHT VALUES ( ? ,  '"+name+"' , 'INFO')");
                 preparedStatement.setInt(1, getNextId());
-                preparedStatement.setString(2, name);
                 preparedStatement.executeUpdate();
                 right = "INFO";
             }

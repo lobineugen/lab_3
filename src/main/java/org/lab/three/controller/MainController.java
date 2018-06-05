@@ -138,7 +138,7 @@ public class MainController {
     public @ResponseBody
     String params(@RequestParam(value = "ot") String objectType) {
         Map<Integer, String> map = dao.getAttrByObjectIdFromAOT(Integer.parseInt(objectType));
-        StringBuilder code = new StringBuilder(75);
+        StringBuilder code = new StringBuilder(150);
         for (Map.Entry<Integer, String> temp : map.entrySet()) {
             code.append("<p><label>");
             code.append(temp.getValue());
@@ -182,7 +182,7 @@ public class MainController {
     public @ResponseBody
     String getStudents(@RequestParam(value = "lesson") int lessonId) {
         LOGGER.debug("Lesson");
-        StringBuilder code = new StringBuilder(90);
+        StringBuilder code = new StringBuilder(250);
         Map<Integer, String> students = dao.getStudentsByLessonId(lessonId);
         List<Visit> list = dao.getVisitByLessonId(lessonId);
         List<String> dateList = dao.getDistinctDateByLessonId(lessonId);
