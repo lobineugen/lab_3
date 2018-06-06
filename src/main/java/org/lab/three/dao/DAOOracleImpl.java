@@ -79,7 +79,11 @@ public class DAOOracleImpl implements DAO {
         connect();
         List<LWObject> list = new ArrayList<>();
         try {
-            preparedStatement = connection.prepareStatement("SELECT * FROM LW_OBJECTS WHERE PARENT_ID = ?");
+            preparedStatement = connection.prepareStatement("SELECT o.object_id, o.parent_id, o.object_type_id,\n" +
+                    "CASE WHEN o.object_type_id = 4 OR o.object_type_id = 5 \n" +
+                    "THEN o.name || ' ' || (SELECT value FROM lw_params WHERE attr_id = 4 AND object_id = o.object_id)\n" +
+                    "ELSE o.name END AS name\n" +
+                    "FROM lw_objects o WHERE o.parent_id = ?");
             preparedStatement.setInt(1, objectID);
             resultSet = preparedStatement.executeQuery();
             while (resultSet.next()) {
@@ -552,10 +556,15 @@ public class DAOOracleImpl implements DAO {
         connect();
         List<LWObject> list = new ArrayList<>();
         try {
-            preparedStatement = connection.prepareStatement("SELECT * FROM lw_objects WHERE" +
-                    " name LIKE ? AND object_type_id = ?");
-            preparedStatement.setString(1, "%" + objectName + "%");
-            preparedStatement.setString(2, String.valueOf(objectTypeID));
+            preparedStatement = connection.prepareStatement("SELECT * FROM (\n" +
+                    "SELECT o.object_id, o.parent_id, o.object_type_id,\n" +
+                    "CASE WHEN o.object_type_id = 4 OR o.object_type_id = 5 \n" +
+                    "THEN o.name || ' ' || (SELECT value FROM lw_params WHERE attr_id = 4 AND object_id = o.object_id) \n" +
+                    "ELSE o.name END AS name \n" +
+                    "FROM lw_objects o \n" +
+                    ") WHERE object_type_id = ? AND upper(name) LIKE '%'||upper(?)||'%'");
+            preparedStatement.setString(1, String.valueOf(objectTypeID));
+            preparedStatement.setString(2, objectName);
             resultSet = preparedStatement.executeQuery();
             while (resultSet.next()) {
                 list.add(parseObject(resultSet));
