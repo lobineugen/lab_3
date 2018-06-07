@@ -22,7 +22,7 @@
                     $('.display').show();
                 }
             });
-        };
+        }
     </script>
     <style>
         .display{

@@ -13,21 +13,22 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
+import java.lang.reflect.Array;
 import java.util.*;
 
 @Controller
 public class MainController {
     private static final Logger LOGGER = Logger.getLogger(MainController.class);
-    public static final String OPEN_TR = "<tr>";
-    public static final String CLOSE_TR = "</tr>";
-    public static final String OPEN_TH = "<th>";
-    public static final String CLOSE_TH = "</th>";
-    public static final String OPEN_TD = "<td>";
-    public static final String CLOSE_TD = "</td>";
-    public static final String OBJ_ID = "objectId";
-    public static final String LIST = "list";
-    public static final String SHOW_ALL_OBJECTS = "showAllObjects";
-    public static final String OBJECT_ID = "object_id";
+    private static final String OPEN_TR = "<tr>";
+    private static final String CLOSE_TR = "</tr>";
+    private static final String OPEN_TH = "<th>";
+    private static final String CLOSE_TH = "</th>";
+    private static final String OPEN_TD = "<td>";
+    private static final String CLOSE_TD = "</td>";
+    private static final String OBJ_ID = "objectId";
+    private static final String LIST = "list";
+    private static final String SHOW_ALL_OBJECTS = "showAllObjects";
+    private static final String OBJECT_ID = "object_id";
 
     @Autowired
     private DAO dao;
@@ -119,16 +120,28 @@ public class MainController {
         Set<String> keySet = params.keySet();
         for (int temp : attr) {
             for (String key : keySet) {
-                if (!("name").equals(key) && !("objectId").equals(key)) {
-                    if (Integer.parseInt(key) == temp && params.get(key) != null) {
-                        String[] value = params.get(key);
-                        for (String par : value) {
-                            dao.updateParams(objectId,temp,par);
+                if (temp == 9 && key.equals("9")) {
+                    if (params.get(key).length == 1 && params.get(key)[0].equals("0")) {
+                        dao.deleteAllLessons(objectId);
+                    } else {
+                        dao.deleteAllLessons(objectId);
+                        for (String less : params.get(key)){
+                            dao.updateLessons(objectId, less);
+                        }
+                    }
+                } else {
+                    if (!("name").equals(key) && !("objectId").equals(key)) {
+                        if (Integer.parseInt(key) == temp && params.get(key) != null) {
+                            String[] value = params.get(key);
+                            for (String par : value) {
+                                dao.updateParams(objectId, temp, par);
+                            }
                         }
                     }
                 }
 
             }
+
         }
         List<LWObject> list = dao.changeNameById(objectId, name);
         return new ModelAndView(SHOW_ALL_OBJECTS, LIST, list);
@@ -291,16 +304,40 @@ public class MainController {
             code.append(CLOSE_TR);
             for (LWObject lwObject : list) {
                 code.append(OPEN_TR);
-                code.append(OPEN_TD + "<input id='object_id' type='checkbox' name='object_id'" +
-                        " value='" + lwObject.getParentID() + '_' + lwObject.getObjectID() + "'>" + CLOSE_TD);
-                code.append(OPEN_TD + lwObject.getObjectID() + CLOSE_TD);
-                code.append(OPEN_TD + lwObject.getParentID() + CLOSE_TD);
-                code.append(OPEN_TD + lwObject.getName() + CLOSE_TD);
-                code.append(OPEN_TD + lwObject.getObjectTypeID() + CLOSE_TD);
+                code.append(OPEN_TD + "<input id='object_id' type='checkbox' name='object_id'" + " value='").append(lwObject.getParentID()).append('_').append(lwObject.getObjectID()).append("'>").append(CLOSE_TD);
+                code.append(OPEN_TD).append(lwObject.getObjectID()).append(CLOSE_TD);
+                code.append(OPEN_TD).append(lwObject.getParentID()).append(CLOSE_TD);
+                code.append(OPEN_TD).append(lwObject.getName()).append(CLOSE_TD);
+                code.append(OPEN_TD).append(lwObject.getObjectTypeID()).append(CLOSE_TD);
                 code.append(CLOSE_TR);
             }
             code.append("</table>");
         }
         return code.toString();
+    }
+
+    @RequestMapping(value = "/lessonsName", method = RequestMethod.GET)
+    public @ResponseBody
+    String getLessonsName(@RequestParam(value = "lessonsId") String arrayId) {
+        StringBuilder arrays = new StringBuilder();
+        String[] arrayIds = arrayId.split("/");
+        for (String b : arrayIds) {
+            arrays.append(b);
+            arrays.append(":");
+            arrays.append(dao.getNameById(Integer.parseInt(b)));
+            arrays.append(";");
+        }
+        return arrays.toString();
+    }
+
+    @RequestMapping(value = "/allLessons", method = RequestMethod.GET)
+    public @ResponseBody
+    String getAllLessons() {
+        StringBuilder allLessons = new StringBuilder();
+        Map<Integer, String> map = dao.getObjectsByObjectType(6);
+        for (Map.Entry<Integer, String> temp : map.entrySet()) {
+            allLessons.append(temp.getKey()).append(":").append(temp.getValue()).append(";");
+        }
+        return allLessons.toString();
     }
 }

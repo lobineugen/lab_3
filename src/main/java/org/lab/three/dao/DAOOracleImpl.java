@@ -381,7 +381,11 @@ public class DAOOracleImpl implements DAO {
                     list = getTopObject();
                 } else {
                     connect();
-                    preparedStatement = connection.prepareStatement("SELECT * FROM lw_objects WHERE parent_id = (SELECT parent_id FROM lw_objects WHERE object_id = ?)");
+                    preparedStatement = connection.prepareStatement("SELECT o.object_id, o.parent_id, o.object_type_id,\n" +
+                            "CASE WHEN o.object_type_id = 4 OR o.object_type_id = 5\n" +
+                            "THEN o.name || ' ' || (SELECT value FROM lw_params WHERE attr_id = 4 AND object_id = o.object_id)\n" +
+                            "ELSE o.name END AS name\n" +
+                            "FROM lw_objects o WHERE o.parent_id = (SELECT parent_id FROM lw_objects WHERE object_id = ?)");
                     preparedStatement.setInt(1, objectId);
                     resultSet = preparedStatement.executeQuery();
                     while (resultSet.next()) {
@@ -519,6 +523,52 @@ public class DAOOracleImpl implements DAO {
         }
         disconnect();
         return right;
+    }
+
+    @Override
+    public String getNameById(int objectId) {
+        connect();
+        String name = "";
+        try {
+            preparedStatement = connection.prepareStatement("select name from lw_objects where object_id = ?");
+            preparedStatement.setInt(1, objectId);
+            resultSet = preparedStatement.executeQuery();
+            while (resultSet.next()) {
+                name = resultSet.getString("name");
+            }
+
+        } catch (SQLException e) {
+            LOGGER.error("Exception with select right for user", e);
+        }
+        disconnect();
+        return name;
+    }
+
+    @Override
+    public void deleteAllLessons(int objectId) {
+        connect();
+        try {
+            preparedStatement = connection.prepareStatement("delete from lw_params where object_id = ? and attr_id = 9");
+            preparedStatement.setInt(1,objectId);
+            preparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            LOGGER.error("Exception with deleted lessons", e);
+        }
+        disconnect();
+    }
+
+    @Override
+    public void updateLessons(int objectId, String value) {
+        connect();
+        try {
+            preparedStatement = connection.prepareStatement("insert into lw_params values (?,9,?)");
+            preparedStatement.setInt(1,objectId);
+            preparedStatement.setString(2,value);
+            preparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            LOGGER.error("Exception with deleted lessons", e);
+        }
+        disconnect();
     }
 
     private LWObject parseObject(ResultSet resultSet) throws SQLException {

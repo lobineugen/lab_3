@@ -32,4 +32,8 @@ public interface DAO {
     List<Visit> getVisitByLessonId(int lessonId);
     List<String> getDistinctDateByLessonId(int lessonId);
     String getRightByUserName(String name);
+    String getNameById(int objectId);
+    void deleteAllLessons(int objectId);
+    void updateLessons(int objectId, String value);
+
 }

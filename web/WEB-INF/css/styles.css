@@ -48,3 +48,27 @@ a
 .icon{
     height: 40px;
 }
+
+.subject-info-box-1,
+.subject-info-box-2 {
+    float: left;
+}
+.subject-info-box-1 select,
+.subject-info-box-2 select {
+    height: 200px;
+    padding: 0;
+}
+.subject-info-box-1 select option,
+.subject-info-box-2 select option {
+    padding: 4px 10px 4px 10px;
+}
+.subject-info-box-1 select option:hover,
+.subject-info-box-2 select option:hover {
+    background: #EEEEEE;
+}
+.subject-info-arrows {
+    float: left;
+}
+.subject-info-arrows input {
+    margin-bottom: 5px;
+}
