@@ -61,13 +61,31 @@
         function checkBoxChecked() {
             return $("input[name='object_id']:checked").length;
         }
+
+        function getPath() {
+            $.ajax({
+                url : 'path',
+                data : 'objectId=' + document.getElementById("parentId").value,
+                success : function(data) {
+                    var newArr = data.split(";");
+                    for( var i = 0; i <newArr.length-1; i++) {
+                        var x = newArr[i].toString().split(":");
+                        $('#topPath').after($('<a>', {
+                            href: "cPath?object_id=" + x[0],
+                            text: x[1] + "/"
+                        }));
+                    }
+                }
+            });
+        }
     </script>
     <style>
         <%@include file="/WEB-INF/css/styles.css"%>
     </style>
 </head>
-<body>
+<body onload="getPath()">
 <form method="post">
+
     <table border="2" id="object_list">
         <thead>
         <tr>
@@ -125,7 +143,7 @@
 
             <%ArrayList list = ((ArrayList) request.getAttribute("list")); %>
             <% if (list.size() > 0) {%>
-            <input type="hidden" name="parentId" value="<%=((LWObject)list.get(0)).getParentID()%>"/>
+            <input type="hidden" name="parentId" value="<%=((LWObject)list.get(0)).getParentID()%>" id="parentId"/>
             <% } else { %>
             <input type="hidden" name="parentId" value="0" id="parentId"/>
             <%} %>
@@ -144,7 +162,8 @@
         <input type="submit" formaction="back" value="Previous" id="hidden">
         <input type="submit" formaction="search" value="Search">
 
-        <input type="submit" formaction="visit" value="Visit" id="hidden">
+        <input type="submit" formaction="visit" value="Visit" id="hidden"><br/>
+        Path: <a href="top" id="topPath">Top/</a>
     </table>
 </form>
 

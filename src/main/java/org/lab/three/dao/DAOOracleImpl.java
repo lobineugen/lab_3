@@ -513,7 +513,7 @@ public class DAOOracleImpl implements DAO {
             }
             if (right.isEmpty()) {
                 preparedStatement = null;
-                preparedStatement = connection.prepareStatement("INSERT INTO LW_RIGHT VALUES ( ? ,  '"+name+"' , 'INFO')");
+                preparedStatement = connection.prepareStatement("INSERT INTO LW_RIGHT VALUES ( ? ,  '" + name + "' , 'INFO')");
                 preparedStatement.setInt(1, getNextId());
                 preparedStatement.executeUpdate();
                 right = "INFO";
@@ -530,7 +530,7 @@ public class DAOOracleImpl implements DAO {
         connect();
         String name = "";
         try {
-            preparedStatement = connection.prepareStatement("select name from lw_objects where object_id = ?");
+            preparedStatement = connection.prepareStatement("SELECT name FROM lw_objects WHERE object_id = ?");
             preparedStatement.setInt(1, objectId);
             resultSet = preparedStatement.executeQuery();
             while (resultSet.next()) {
@@ -548,8 +548,8 @@ public class DAOOracleImpl implements DAO {
     public void deleteAllLessons(int objectId) {
         connect();
         try {
-            preparedStatement = connection.prepareStatement("delete from lw_params where object_id = ? and attr_id = 9");
-            preparedStatement.setInt(1,objectId);
+            preparedStatement = connection.prepareStatement("DELETE FROM lw_params WHERE object_id = ? AND attr_id = 9");
+            preparedStatement.setInt(1, objectId);
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
             LOGGER.error("Exception with deleted lessons", e);
@@ -561,14 +561,54 @@ public class DAOOracleImpl implements DAO {
     public void updateLessons(int objectId, String value) {
         connect();
         try {
-            preparedStatement = connection.prepareStatement("insert into lw_params values (?,9,?)");
-            preparedStatement.setInt(1,objectId);
-            preparedStatement.setString(2,value);
+            preparedStatement = connection.prepareStatement("INSERT INTO lw_params VALUES (?,9,?)");
+            preparedStatement.setInt(1, objectId);
+            preparedStatement.setString(2, value);
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
             LOGGER.error("Exception with deleted lessons", e);
         }
         disconnect();
+    }
+
+    @Override
+    public Map<Integer, String> getPath(int parent_id) {
+        connect();
+        Map<Integer, String> map = new HashMap<>();
+        try {
+            preparedStatement = connection.prepareStatement("SELECT level, o.object_id, o.name, o.object_type_id FROM lw_objects o START WITH o.object_id = ? CONNECT BY PRIOR  o.parent_id = o.object_id\n" +
+                    "ORDER BY level DESC");
+            preparedStatement.setInt(1, parent_id);
+            resultSet = preparedStatement.executeQuery();
+            while (resultSet.next()) {
+                if (resultSet.getInt("object_type_id") != 1) {
+                    map.put(resultSet.getInt("object_id"),
+                            resultSet.getString("name"));
+                }
+            }
+        } catch (SQLException e) {
+            LOGGER.error("Exception with get path", e);
+        }
+        disconnect();
+        return map;
+    }
+
+    @Override
+    public List<LWObject> getParentByChildren(int object_id) {
+        connect();
+        List<LWObject> list = new ArrayList<>();
+        try {
+            preparedStatement = connection.prepareStatement("select * from lw_objects where parent_id = (select parent_id from lw_objects where object_id = ?)");
+            preparedStatement.setInt(1, object_id);
+            resultSet = preparedStatement.executeQuery();
+            while (resultSet.next()) {
+                list.add(parseObject(resultSet));
+            }
+        } catch (SQLException e) {
+            LOGGER.error("Exception with get path", e);
+        }
+        disconnect();
+        return list;
     }
 
     private LWObject parseObject(ResultSet resultSet) throws SQLException {

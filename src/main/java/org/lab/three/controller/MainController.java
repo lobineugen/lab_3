@@ -33,7 +33,7 @@ public class MainController {
     @Autowired
     private DAO dao;
 
-    @RequestMapping(value = {"/home", "/sign"})
+    @RequestMapping(value = {"/sign"})
     public ModelAndView showObjects(HttpServletRequest request) {
         LOGGER.debug("Showing top objects");
         List<LWObject> list = dao.getTopObject();
@@ -42,16 +42,33 @@ public class MainController {
         return new ModelAndView(SHOW_ALL_OBJECTS, LIST, list);
     }
 
+    @RequestMapping(value = {"/home", "/top"})
+    public ModelAndView getTop() {
+        LOGGER.debug("Showing top objects");
+        List<LWObject> list = dao.getTopObject();
+        return new ModelAndView(SHOW_ALL_OBJECTS, LIST, list);
+    }
+
     @RequestMapping("/children")
     public ModelAndView showChildren(@RequestParam(value = OBJECT_ID) String objectID) {
         LOGGER.debug("Showing children");
+        List<LWObject> list;
         int id = Integer.parseInt(objectID.substring(objectID.lastIndexOf('_') + 1, objectID.length()));
-        List<LWObject> list = dao.getChildren(id);
+        list = dao.getChildren(id);
         if (list.isEmpty()) {
             return new ModelAndView(SHOW_ALL_OBJECTS, LIST, objectID);
         }
         return new ModelAndView(SHOW_ALL_OBJECTS, LIST, list);
     }
+
+    @RequestMapping("/cPath")
+    public ModelAndView getChildrenPath(@RequestParam(value = OBJECT_ID) int objectID) {
+        LOGGER.debug("Showing children");
+        List<LWObject> list;
+        list = dao.getParentByChildren(objectID);
+        return new ModelAndView(SHOW_ALL_OBJECTS, LIST, list);
+    }
+
 
     @RequestMapping("/remove")
     public ModelAndView removeObject(@RequestParam(value = OBJECT_ID) String... arrays) {
@@ -125,7 +142,7 @@ public class MainController {
                         dao.deleteAllLessons(objectId);
                     } else {
                         dao.deleteAllLessons(objectId);
-                        for (String less : params.get(key)){
+                        for (String less : params.get(key)) {
                             dao.updateLessons(objectId, less);
                         }
                     }
@@ -339,5 +356,16 @@ public class MainController {
             allLessons.append(temp.getKey()).append(":").append(temp.getValue()).append(";");
         }
         return allLessons.toString();
+    }
+
+    @RequestMapping(value = "/path", method = RequestMethod.GET)
+    public @ResponseBody
+    String getPath(@RequestParam(value = "objectId") int objectId) {
+        StringBuilder path = new StringBuilder();
+        Map<Integer, String> map = dao.getPath(objectId);
+        for (Map.Entry<Integer, String> temp : map.entrySet()) {
+            path.append(temp.getKey()).append(":").append(temp.getValue()).append(";");
+        }
+        return path.toString();
     }
 }

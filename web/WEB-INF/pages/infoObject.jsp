@@ -16,9 +16,40 @@
     <style>
         <%@include file="/WEB-INF/css/styles.css"%>
     </style>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script type="text/javascript">
+        function studentLessons() {
+            if ($("#lstBox2 > option").length) {
+                var arrayId = "";
+                $("#lstBox2 > option").each(function () {
+                        arrayId+= $(this).val() + "/";
+                    }
+                );
+                $.ajax({
+                    url : 'lessonsName',
+                    data : 'lessonsId=' + arrayId,
+                    success : function(data) {
+                        var newArr = data.split(";");
+                        for( var i = 0; i <newArr.length-1; i++) {
+                            var x = newArr[i].toString().split(":");
+                            $("#lstBox2 > option").each(function () {
+                                    if($(this).val() === x[0]){
+                                        $(this).text(x[1]);
+                                        $(this).show();
+                                    }
+                                }
+                            );
+
+                        }
+                    }
+                });
+            }
+        }
+    </script>
 </head>
-<body>
+<body onload="studentLessons()">
 <form method="POST">
+    <input type="submit" formaction="back" value="Back">
     <%LWObject object = (LWObject) request.getAttribute("object"); %>
     <p><label>
         Object id:
@@ -32,6 +63,9 @@
     <% Set<String> keySet = object.getParams().keySet();
         for (String key : keySet) {
             int id = Integer.parseInt(key.substring(0, key.indexOf("_")));
+            if (id==9) {
+                break;
+            }
             String name = key.substring(key.indexOf("_") + 1, key.length());
             List<String> list = (List<String>) object.getParams().get(key);
             for (String temp : list) {%>
@@ -43,8 +77,27 @@
             </p>
             <%} %>
     <%}%>
+    <%if (object.getObjectTypeID() == 4 ) {%>
+    <div class="subject-info-box-2">
+        Student lessons:<br>
+        <select multiple="multiple" id='lstBox2' class="form-control" name="9">
+            <%
+                for (String key : keySet) {
+                    int id = Integer.parseInt(key.substring(0, key.indexOf("_")));
+                    List<String> list = (List<String>) object.getParams().get(key);
+                    if (id==9) {
+                        for (String temp : list) {%>
 
-    <input type="submit" formaction="back" value="Back">
+            <option value="<%=temp%>" hidden><%=temp%></option>
+            <%            }
+            }
+            }
+
+            %>
+        </select>
+    </div>
+    <%} %>
+
 </form>
 
 </body>
