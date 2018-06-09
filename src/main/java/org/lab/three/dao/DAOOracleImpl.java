@@ -16,6 +16,9 @@ import java.net.URL;
 import java.sql.*;
 import java.util.*;
 
+/**
+ * DAOOracleImpl class organizes work with database
+ */
 public class DAOOracleImpl implements DAO {
     private Connection connection;
     private PreparedStatement preparedStatement;
@@ -25,6 +28,9 @@ public class DAOOracleImpl implements DAO {
     private static final String OBJECT_TYPE_ID = "object_type_id";
     private static final Logger LOGGER = Logger.getLogger(DAOOracleImpl.class);
 
+    /**
+     * connects to database
+     */
     public void connect() {
         LOGGER.debug("Connecting to database");
         Hashtable hashtable = new Hashtable();
@@ -42,6 +48,9 @@ public class DAOOracleImpl implements DAO {
         }
     }
 
+    /**
+     * disconnects from database
+     */
     public void disconnect() {
         LOGGER.debug("Disconnecting from database");
         try {
@@ -56,6 +65,10 @@ public class DAOOracleImpl implements DAO {
         }
     }
 
+    /**
+     * returns list of top objects
+     * @return list
+     */
     public List<LWObject> getTopObject() {
         LOGGER.debug("Getting top objects");
         connect();
@@ -74,6 +87,11 @@ public class DAOOracleImpl implements DAO {
         return list;
     }
 
+    /**
+     * returns list of child objects
+     * @param objectID
+     * @return list
+     */
     public List<LWObject> getChildren(int objectID) {
         LOGGER.debug("Getting children objects");
         connect();
@@ -97,6 +115,12 @@ public class DAOOracleImpl implements DAO {
         return list;
     }
 
+    /**
+     * removes object by ID
+     * @param objectID
+     * @param parentID
+     * @return list
+     */
     @Override
     public List<LWObject> removeByID(int[] objectID, String parentID) {
         LOGGER.debug("Removing object by ID");
@@ -144,6 +168,13 @@ public class DAOOracleImpl implements DAO {
         return list;
     }
 
+    /**
+     * creates object
+     * @param name
+     * @param parentId
+     * @param objectType
+     * @return objectID
+     */
     @Override
     public int createObject(String name, String parentId, String objectType) {
         LOGGER.debug("Creating object");
@@ -170,6 +201,11 @@ public class DAOOracleImpl implements DAO {
         return objectID;
     }
 
+    /**
+     * returns HashMap with OBJECT_TYPE_ID and OBJECT_TYPE
+     * @param parentId
+     * @return map
+     */
     @Override
     public Map<Integer, String> getObjectTypes(int parentId) {
         LOGGER.debug("Getting object type");
@@ -191,6 +227,11 @@ public class DAOOracleImpl implements DAO {
         return map;
     }
 
+    /**
+     * returns object by ID
+     * @param objectId
+     * @return object
+     */
     @Override
     public LWObject getObjectById(int objectId) {
         LOGGER.debug("Getting object by ID");
@@ -211,6 +252,12 @@ public class DAOOracleImpl implements DAO {
         return lwObject;
     }
 
+    /**
+     * changes object name by ID
+     * @param objectId
+     * @param name
+     * @return list
+     */
     @Override
     public List<LWObject> changeNameById(int objectId, String name) {
         LOGGER.debug("Changing name by ID");
@@ -229,6 +276,10 @@ public class DAOOracleImpl implements DAO {
         return list;
     }
 
+    /**
+     * checks table number
+     * @return number of tables
+     */
     @Override
     public int checkTables() {
         LOGGER.debug("Checking tables");
@@ -247,6 +298,9 @@ public class DAOOracleImpl implements DAO {
         return count;
     }
 
+    /**
+     * executes SQL script
+     */
     @Override
     public void executeScript() {
         LOGGER.debug("Executing script");
@@ -266,6 +320,11 @@ public class DAOOracleImpl implements DAO {
         disconnect();
     }
 
+    /**
+     * returns collection of all object parameters
+     * @param objectId
+     * @return collection
+     */
     @Override
     public Multimap<String, String> getParamsById(int objectId) {
         Multimap<String, String> arrays = ArrayListMultimap.create();
@@ -284,6 +343,11 @@ public class DAOOracleImpl implements DAO {
         return arrays;
     }
 
+    /**
+     * returns list of object attribute IDs
+     * @param objectId
+     * @return list
+     */
     @Override
     public ArrayList<Integer> getAttrByObjectIdFromParams(int objectId) {
         connect();
@@ -303,6 +367,12 @@ public class DAOOracleImpl implements DAO {
         return arrayList;
     }
 
+    /**
+     * updates object parameters table data
+     * @param objectId
+     * @param attrID
+     * @param value
+     */
     @Override
     public void updateParams(int objectId, int attrID, String value) {
         connect();
@@ -326,6 +396,11 @@ public class DAOOracleImpl implements DAO {
         disconnect();
     }
 
+    /**
+     * returns data from lw_attr table by objectType
+     * @param objectType
+     * @return map
+     */
     @Override
     public Map<Integer, String> getAttrByObjectIdFromAOT(int objectType) {
         connect();
@@ -345,6 +420,10 @@ public class DAOOracleImpl implements DAO {
         return map;
     }
 
+    /**
+     * returns next ID
+     * @return id
+     */
     @Override
     public int getNextId() {
         int id = 0;
@@ -360,6 +439,11 @@ public class DAOOracleImpl implements DAO {
         return id;
     }
 
+    /**
+     * returns objects list by object
+     * @param objectId
+     * @return list
+     */
     @Override
     public List<LWObject> getObjectsListByObject(int objectId) {
 
@@ -402,6 +486,11 @@ public class DAOOracleImpl implements DAO {
         return list;
     }
 
+    /**
+     * returns objects id and name map by object type
+     * @param objectType
+     * @return map
+     */
     @Override
     public Map<Integer, String> getObjectsByObjectType(int objectType) {
         Map<Integer, String> objects = new HashMap<>();
@@ -420,6 +509,11 @@ public class DAOOracleImpl implements DAO {
         return objects;
     }
 
+    /**
+     * returns students id and name map for particular lesson
+     * @param lessonId
+     * @return map
+     */
     @Override
     public Map<Integer, String> getStudentsByLessonId(int lessonId) {
         Map<Integer, String> map = new HashMap<>();
@@ -441,6 +535,13 @@ public class DAOOracleImpl implements DAO {
         return map;
     }
 
+    /**
+     * inserts data into lw_visit table
+     * @param lessonId
+     * @param objectId
+     * @param date
+     * @param value
+     */
     @Override
     public void insertVisit(String lessonId, String objectId, String date, String value) {
         connect();
@@ -461,6 +562,11 @@ public class DAOOracleImpl implements DAO {
         disconnect();
     }
 
+    /**
+     * returns list of visits by lesson id
+     * @param lessonId
+     * @return list
+     */
     @Override
     public List<Visit> getVisitByLessonId(int lessonId) {
         List<Visit> list = new ArrayList<>();
@@ -482,6 +588,11 @@ public class DAOOracleImpl implements DAO {
         return list;
     }
 
+    /**
+     * returns list of unique dates by lesson id
+     * @param lessonId
+     * @return list
+     */
     @Override
     public List<String> getDistinctDateByLessonId(int lessonId) {
         connect();
@@ -500,6 +611,11 @@ public class DAOOracleImpl implements DAO {
         return list;
     }
 
+    /**
+     * returns role right by role name
+     * @param name
+     * @return role right
+     */
     @Override
     public String getRightByUserName(String name) {
         connect();
@@ -525,6 +641,11 @@ public class DAOOracleImpl implements DAO {
         return right;
     }
 
+    /**
+     * returns object name by object id
+     * @param objectId
+     * @return object name
+     */
     @Override
     public String getNameById(int objectId) {
         connect();
@@ -544,6 +665,10 @@ public class DAOOracleImpl implements DAO {
         return name;
     }
 
+    /**
+     * deletes lessons from lw_params table
+     * @param objectId
+     */
     @Override
     public void deleteAllLessons(int objectId) {
         connect();
@@ -557,6 +682,11 @@ public class DAOOracleImpl implements DAO {
         disconnect();
     }
 
+    /**
+     * updates lessons data in lw_params table
+     * @param objectId
+     * @param value
+     */
     @Override
     public void updateLessons(int objectId, String value) {
         connect();
@@ -571,6 +701,11 @@ public class DAOOracleImpl implements DAO {
         disconnect();
     }
 
+    /**
+     * returns path to object in map of object id and name
+     * @param parent_id
+     * @return  map
+     */
     @Override
     public Map<Integer, String> getPath(int parent_id) {
         connect();
@@ -593,6 +728,11 @@ public class DAOOracleImpl implements DAO {
         return map;
     }
 
+    /**
+     * returns list of parent objects by children
+     * @param object_id
+     * @return list
+     */
     @Override
     public List<LWObject> getParentByChildren(int object_id) {
         connect();
@@ -611,6 +751,11 @@ public class DAOOracleImpl implements DAO {
         return list;
     }
 
+    /**
+     * returns new object creating from resultSet
+     * @param resultSet
+     * @return object
+     */
     private LWObject parseObject(ResultSet resultSet) throws SQLException {
         LOGGER.debug("Parsing object");
         int objectID = resultSet.getInt(OBJECT_ID);
@@ -621,6 +766,10 @@ public class DAOOracleImpl implements DAO {
                 resultSet.getString(NAME), map);
     }
 
+    /**
+     * returns map with object type id and name of all object types
+     * @return map
+     */
     @Override
     public Map<Integer, String> getAllObjectTypes() {
         LOGGER.debug("Getting object type");
@@ -640,6 +789,12 @@ public class DAOOracleImpl implements DAO {
         return map;
     }
 
+    /**
+     * returns list of objects by list and type
+     * @param objectName
+     * @param objectTypeID
+     * @return list
+     */
     @Override
     public List<LWObject> getLWObjectByNameAndType(String objectName, int objectTypeID) {
         LOGGER.debug("Getting object");

@@ -1,5 +1,8 @@
 package org.lab.three.beans;
 
+/**
+ * Visit class is responsible for visit dates and evaluation on subjects
+ */
 public class Visit {
     private int objectId;
     private int lessonId;
@@ -16,34 +19,66 @@ public class Visit {
     public Visit() {
     }
 
+    /**
+     * @return object ID
+     */
     public int getObjectId() {
         return objectId;
     }
 
+    /**
+     * Sets object ID
+     *
+     * @param objectId
+     */
     public void setObjectId(int objectId) {
         this.objectId = objectId;
     }
 
+    /**
+     * @return lesson ID
+     */
     public int getLessonId() {
         return lessonId;
     }
 
+    /**
+     * Sets lesson ID
+     *
+     * @param lessonId
+     */
     public void setLessonId(int lessonId) {
         this.lessonId = lessonId;
     }
 
+    /**
+     * @return date of lesson conducting
+     */
     public String getDate() {
         return date;
     }
 
+    /**
+     * Sets date of lesson conducting
+     *
+     * @param date
+     */
     public void setDate(String date) {
         this.date = date;
     }
 
+    /**
+     * @return evaluation on subject
+     */
     public String getMark() {
         return mark;
     }
 
+    /**
+     * Sets evaluation on subject
+     *
+     * @param mark
+     */
     public void setMark(String mark) {
         this.mark = mark;
     }

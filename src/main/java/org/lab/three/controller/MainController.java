@@ -16,6 +16,9 @@ import javax.servlet.http.HttpServletRequest;
 import java.lang.reflect.Array;
 import java.util.*;
 
+/**
+ * MainController class connects view and dao
+ */
 @Controller
 public class MainController {
     private static final Logger LOGGER = Logger.getLogger(MainController.class);
@@ -33,15 +36,24 @@ public class MainController {
     @Autowired
     private DAO dao;
 
+    /**
+     * Showing top objects considering entered role
+     *
+     * @param request
+     */
     @RequestMapping(value = {"/sign"})
     public ModelAndView showObjects(HttpServletRequest request) {
-        LOGGER.debug("Showing top objects");
+        LOGGER.debug("Showing top objects considering role");
         List<LWObject> list = dao.getTopObject();
         String userName = request.getParameter("userName");
         request.getSession().setAttribute("right", dao.getRightByUserName(userName));
         return new ModelAndView(SHOW_ALL_OBJECTS, LIST, list);
     }
 
+
+    /**
+     * Shows top objects
+     */
     @RequestMapping(value = {"/home", "/top"})
     public ModelAndView getTop() {
         LOGGER.debug("Showing top objects");
@@ -49,6 +61,11 @@ public class MainController {
         return new ModelAndView(SHOW_ALL_OBJECTS, LIST, list);
     }
 
+    /**
+     * Shows children objects
+     *
+     * @param objectID
+     */
     @RequestMapping("/children")
     public ModelAndView showChildren(@RequestParam(value = OBJECT_ID) String objectID) {
         LOGGER.debug("Showing children");
@@ -61,15 +78,23 @@ public class MainController {
         return new ModelAndView(SHOW_ALL_OBJECTS, LIST, list);
     }
 
+    /**
+     * Gets children path
+     *
+     * @param objectID
+     */
     @RequestMapping("/cPath")
     public ModelAndView getChildrenPath(@RequestParam(value = OBJECT_ID) int objectID) {
-        LOGGER.debug("Showing children");
         List<LWObject> list;
         list = dao.getParentByChildren(objectID);
         return new ModelAndView(SHOW_ALL_OBJECTS, LIST, list);
     }
 
-
+    /**
+     * Shows all objects page after removing object
+     *
+     * @param arrays
+     */
     @RequestMapping("/remove")
     public ModelAndView removeObject(@RequestParam(value = OBJECT_ID) String... arrays) {
         LOGGER.debug("Removing objects");
@@ -83,6 +108,11 @@ public class MainController {
         return new ModelAndView(SHOW_ALL_OBJECTS, LIST, list);
     }
 
+    /**
+     * Shows add object page
+     *
+     * @param parentId
+     */
     @RequestMapping("/add")
     public ModelAndView addNewObject(@RequestParam(value = "parentId") int parentId) {
         LOGGER.debug("Adding new objects");
@@ -96,6 +126,13 @@ public class MainController {
         return new ModelAndView("addObject", "array", array);
     }
 
+    /**
+     * Shows all objects page with new object
+     *
+     * @param objectName
+     * @param parentId
+     * @param objectType
+     */
     @RequestMapping("/create")
     public ModelAndView createNewObject(@RequestParam(value = "objectName") String objectName,
                                         @RequestParam(value = "parentId") String parentId,
@@ -119,6 +156,11 @@ public class MainController {
         return new ModelAndView(SHOW_ALL_OBJECTS, LIST, list);
     }
 
+    /**
+     * Shows edit object page
+     *
+     * @param objectId
+     */
     @RequestMapping("/edit")
     public ModelAndView editObject(@RequestParam(value = OBJECT_ID) String objectId) {
         LOGGER.debug("Editing objects");
@@ -127,6 +169,13 @@ public class MainController {
         return new ModelAndView("editObject", "object", lwObject);
     }
 
+    /**
+     * Shows all objects page and submits object editing
+     *
+     * @param name
+     * @param objectId
+     * @param request
+     */
     @RequestMapping("/submitEdit")
     public ModelAndView submitEdit(@RequestParam(value = "name") String name,
                                    @RequestParam(value = OBJ_ID) int objectId,
@@ -156,7 +205,6 @@ public class MainController {
                         }
                     }
                 }
-
             }
 
         }
@@ -164,6 +212,11 @@ public class MainController {
         return new ModelAndView(SHOW_ALL_OBJECTS, LIST, list);
     }
 
+    /**
+     * Shows object parameters
+     *
+     * @param objectType
+     */
     @RequestMapping(value = "/params", method = RequestMethod.GET)
     public @ResponseBody
     String params(@RequestParam(value = "ot") String objectType) {
@@ -179,6 +232,11 @@ public class MainController {
         return code.toString();
     }
 
+    /**
+     * Shows page with all information about object
+     *
+     * @param objectID
+     */
     @RequestMapping("/info")
     public ModelAndView seeInfo(@RequestParam(value = OBJECT_ID) String objectID) {
         LOGGER.debug("See info objects");
@@ -187,6 +245,11 @@ public class MainController {
         return new ModelAndView("infoObject", "object", lwObject);
     }
 
+    /**
+     * Shows all objects page
+     *
+     * @param request
+     */
     @RequestMapping("/back")
     public ModelAndView back(HttpServletRequest request) {
         LOGGER.debug("Back");
@@ -200,7 +263,10 @@ public class MainController {
         return new ModelAndView(SHOW_ALL_OBJECTS, LIST, list);
     }
 
-
+    /**
+     * Shows visit page
+     *
+     */
     @RequestMapping("/visit")
     public ModelAndView visitTable() {
         LOGGER.debug("Visit");
@@ -208,6 +274,11 @@ public class MainController {
         return new ModelAndView("visitPage", "lessons", lessons);
     }
 
+    /**
+     * Shows lesson conducting dates
+     *
+     * @param lessonId
+     */
     @RequestMapping(value = "/lesson", method = RequestMethod.GET)
     public @ResponseBody
     String getStudents(@RequestParam(value = "lesson") int lessonId) {
@@ -274,6 +345,11 @@ public class MainController {
         return code.toString();
     }
 
+    /**
+     * Saves new dates of lesson conducting and shows visit page
+     *
+     * @param request
+     */
     @RequestMapping("/saveVisit")
     public ModelAndView saveVisit(HttpServletRequest request) {
         LOGGER.debug("Save visit");
@@ -294,7 +370,10 @@ public class MainController {
         return new ModelAndView("visitPage", "lessons", lessons);
     }
 
-
+    /**
+     * Shows search objects page
+     *
+     */
     @RequestMapping("/search")
     public ModelAndView searchObject() {
         LOGGER.debug("Serching new objects");
@@ -302,6 +381,12 @@ public class MainController {
         return new ModelAndView("searchObject", LIST, allObjectTypes);
     }
 
+    /**
+     * Shows searching results at search objects page
+     *
+     * @param name
+     * @param typeID
+     */
     @RequestMapping(value = "/find", method = RequestMethod.GET)
     public @ResponseBody
     String find(@RequestParam(value = "o") String name,
@@ -333,6 +418,11 @@ public class MainController {
         return code.toString();
     }
 
+    /**
+     * Gets student lessons names
+     *
+     * @param arrayId
+     */
     @RequestMapping(value = "/lessonsName", method = RequestMethod.GET)
     public @ResponseBody
     String getLessonsName(@RequestParam(value = "lessonsId") String arrayId) {
@@ -347,6 +437,9 @@ public class MainController {
         return arrays.toString();
     }
 
+    /**
+     * Gets all lessons names
+     */
     @RequestMapping(value = "/allLessons", method = RequestMethod.GET)
     public @ResponseBody
     String getAllLessons() {
@@ -358,6 +451,11 @@ public class MainController {
         return allLessons.toString();
     }
 
+    /**
+     * Gets path to object in objects hierarchy
+     *
+     * @param objectId
+     */
     @RequestMapping(value = "/path", method = RequestMethod.GET)
     public @ResponseBody
     String getPath(@RequestParam(value = "objectId") int objectId) {
