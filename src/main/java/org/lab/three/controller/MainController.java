@@ -246,7 +246,7 @@ public class MainController {
     }
 
     /**
-     * Shows all objects page
+     * Returns to objects page
      *
      * @param request
      */

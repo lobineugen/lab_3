@@ -26,6 +26,8 @@ public class DAOOracleImpl implements DAO {
     private static final String NAME = "name";
     private static final String OBJECT_ID = "object_id";
     private static final String OBJECT_TYPE_ID = "object_type_id";
+    private static String datasourceName;
+    private static final String DATASOURCE_PROPERTIES_PATH = "application.properties";
     private static final Logger LOGGER = Logger.getLogger(DAOOracleImpl.class);
 
     /**
@@ -33,12 +35,13 @@ public class DAOOracleImpl implements DAO {
      */
     public void connect() {
         LOGGER.debug("Connecting to database");
+        uploadDatasourceProperties();
         Hashtable hashtable = new Hashtable();
         hashtable.put(Context.INITIAL_CONTEXT_FACTORY, "weblogic.jndi.WLInitialContextFactory");
         hashtable.put(Context.PROVIDER_URL, "t3://localhost:7001");
         try {
             Context context = new InitialContext(hashtable);
-            DataSource dataSource = (DataSource) context.lookup("datasourceLab");
+            DataSource dataSource = (DataSource) context.lookup(datasourceName);
             connection = dataSource.getConnection();
             if (!connection.isClosed()) {
                 LOGGER.info("Connection successful");
@@ -46,6 +49,21 @@ public class DAOOracleImpl implements DAO {
         } catch (NamingException | SQLException e) {
             LOGGER.error("Exception during connection to database", e);
         }
+    }
+
+    /**
+     * uploads datasourceName name from file
+     */
+    private void uploadDatasourceProperties() {
+        ClassLoader classLoader = getClass().getClassLoader();
+        InputStream socketProperties = classLoader.getResourceAsStream(DATASOURCE_PROPERTIES_PATH);
+        Properties properties = new Properties();
+        try {
+            properties.load(socketProperties);
+        } catch (IOException e) {
+            LOGGER.error("Can't load application.properties", e);
+        }
+        datasourceName = properties.getProperty("datasourceName");
     }
 
     /**
