@@ -518,7 +518,7 @@ public class DAOOracleImpl implements DAO {
             preparedStatement.setInt(1, objectType);
             resultSet = preparedStatement.executeQuery();
             while (resultSet.next()) {
-                objects.put(resultSet.getInt(OBJECT_ID), resultSet.getString("name"));
+                objects.put(resultSet.getInt(OBJECT_ID), resultSet.getString(NAME));
             }
         } catch (SQLException e) {
             LOGGER.error("Exception get objects by object type id ", e);
@@ -544,7 +544,7 @@ public class DAOOracleImpl implements DAO {
             resultSet = preparedStatement.executeQuery();
             while (resultSet.next()) {
                 map.put(resultSet.getInt(OBJECT_ID),
-                        resultSet.getString("name"));
+                        resultSet.getString(NAME));
             }
         } catch (SQLException e) {
             LOGGER.error("Exception get students by lesson id ", e);
@@ -673,7 +673,7 @@ public class DAOOracleImpl implements DAO {
             preparedStatement.setInt(1, objectId);
             resultSet = preparedStatement.executeQuery();
             while (resultSet.next()) {
-                name = resultSet.getString("name");
+                name = resultSet.getString(NAME);
             }
 
         } catch (SQLException e) {
@@ -721,22 +721,22 @@ public class DAOOracleImpl implements DAO {
 
     /**
      * returns path to object in map of object id and name
-     * @param parent_id
+     * @param parentID
      * @return  map
      */
     @Override
-    public Map<Integer, String> getPath(int parent_id) {
+    public Map<Integer, String> getPath(int parentID) {
         connect();
         Map<Integer, String> map = new HashMap<>();
         try {
             preparedStatement = connection.prepareStatement("SELECT level, o.object_id, o.name, o.object_type_id FROM lw_objects o START WITH o.object_id = ? CONNECT BY PRIOR  o.parent_id = o.object_id\n" +
                     "ORDER BY level DESC");
-            preparedStatement.setInt(1, parent_id);
+            preparedStatement.setInt(1, parentID);
             resultSet = preparedStatement.executeQuery();
             while (resultSet.next()) {
                 if (resultSet.getInt("object_type_id") != 1) {
                     map.put(resultSet.getInt("object_id"),
-                            resultSet.getString("name"));
+                            resultSet.getString(NAME));
                 }
             }
         } catch (SQLException e) {
@@ -748,16 +748,16 @@ public class DAOOracleImpl implements DAO {
 
     /**
      * returns list of parent objects by children
-     * @param object_id
+     * @param objectID
      * @return list
      */
     @Override
-    public List<LWObject> getParentByChildren(int object_id) {
+    public List<LWObject> getParentByChildren(int objectID) {
         connect();
         List<LWObject> list = new ArrayList<>();
         try {
             preparedStatement = connection.prepareStatement("select * from lw_objects where parent_id = (select parent_id from lw_objects where object_id = ?)");
-            preparedStatement.setInt(1, object_id);
+            preparedStatement.setInt(1, objectID);
             resultSet = preparedStatement.executeQuery();
             while (resultSet.next()) {
                 list.add(parseObject(resultSet));

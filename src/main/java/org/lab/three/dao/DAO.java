@@ -35,7 +35,6 @@ public interface DAO {
     String getNameById(int objectId);
     void deleteAllLessons(int objectId);
     void updateLessons(int objectId, String value);
-    Map<Integer,String> getPath(int parent_id);
-    List<LWObject> getParentByChildren(int object_id);
-
+    Map<Integer,String> getPath(int parentID);
+    List<LWObject> getParentByChildren(int objectID);
 }

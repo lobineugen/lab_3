@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
-import java.lang.reflect.Array;
 import java.util.*;
 
 /**
@@ -186,7 +185,7 @@ public class MainController {
         Set<String> keySet = params.keySet();
         for (int temp : attr) {
             for (String key : keySet) {
-                if (temp == 9 && key.equals("9")) {
+                if (temp == 9 && "9".equals(key)) {
                     if (params.get(key).length == 1 && params.get(key)[0].equals("0")) {
                         dao.deleteAllLessons(objectId);
                     } else {
@@ -196,17 +195,15 @@ public class MainController {
                         }
                     }
                 } else {
-                    if (!("name").equals(key) && !("objectId").equals(key)) {
-                        if (Integer.parseInt(key) == temp && params.get(key) != null) {
+                    if ((!("name").equals(key) && !("objectId").equals(key)) && (Integer.parseInt(key) == temp &&
+                            params.get(key) != null)) {
                             String[] value = params.get(key);
                             for (String par : value) {
                                 dao.updateParams(objectId, temp, par);
                             }
-                        }
                     }
                 }
             }
-
         }
         List<LWObject> list = dao.changeNameById(objectId, name);
         return new ModelAndView(SHOW_ALL_OBJECTS, LIST, list);
@@ -406,7 +403,9 @@ public class MainController {
             code.append(CLOSE_TR);
             for (LWObject lwObject : list) {
                 code.append(OPEN_TR);
-                code.append(OPEN_TD + "<input id='object_id' type='checkbox' name='object_id'" + " value='").append(lwObject.getParentID()).append('_').append(lwObject.getObjectID()).append("'>").append(CLOSE_TD);
+                code.append(OPEN_TD).append("<input id='object_id' type='checkbox' name='object_id' value='").
+                        append(lwObject.getParentID()).append('_').append(lwObject.getObjectID()).append("'>").
+                        append(CLOSE_TD);
                 code.append(OPEN_TD).append(lwObject.getObjectID()).append(CLOSE_TD);
                 code.append(OPEN_TD).append(lwObject.getParentID()).append(CLOSE_TD);
                 code.append(OPEN_TD).append(lwObject.getName()).append(CLOSE_TD);
@@ -419,7 +418,7 @@ public class MainController {
     }
 
     /**
-     * Gets student lessons names
+     * returns student lessons names
      *
      * @param arrayId
      */
@@ -428,11 +427,11 @@ public class MainController {
     String getLessonsName(@RequestParam(value = "lessonsId") String arrayId) {
         StringBuilder arrays = new StringBuilder();
         String[] arrayIds = arrayId.split("/");
-        for (String b : arrayIds) {
-            arrays.append(b);
-            arrays.append(":");
-            arrays.append(dao.getNameById(Integer.parseInt(b)));
-            arrays.append(";");
+        for (String str : arrayIds) {
+            arrays.append(str);
+            arrays.append(':');
+            arrays.append(dao.getNameById(Integer.parseInt(str)));
+            arrays.append(';');
         }
         return arrays.toString();
     }
@@ -446,7 +445,7 @@ public class MainController {
         StringBuilder allLessons = new StringBuilder();
         Map<Integer, String> map = dao.getObjectsByObjectType(6);
         for (Map.Entry<Integer, String> temp : map.entrySet()) {
-            allLessons.append(temp.getKey()).append(":").append(temp.getValue()).append(";");
+            allLessons.append(temp.getKey()).append(':').append(temp.getValue()).append(';');
         }
         return allLessons.toString();
     }
@@ -462,7 +461,7 @@ public class MainController {
         StringBuilder path = new StringBuilder();
         Map<Integer, String> map = dao.getPath(objectId);
         for (Map.Entry<Integer, String> temp : map.entrySet()) {
-            path.append(temp.getKey()).append(":").append(temp.getValue()).append(";");
+            path.append(temp.getKey()).append(':').append(temp.getValue()).append(';');
         }
         return path.toString();
     }
