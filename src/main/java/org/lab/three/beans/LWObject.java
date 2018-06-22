@@ -104,4 +104,39 @@ public class LWObject {
     public void setParams(Multimap<String,String> params) {
         this.params = params;
     }
+
+    @Override
+    public String toString() {
+        return "LWObject{" +
+                "objectID=" + objectID +
+                ", parentID=" + parentID +
+                ", objectTypeID=" + objectTypeID +
+                ", name='" + name + '\'' +
+                ", params=" + params +
+                '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        LWObject lwObject = (LWObject) o;
+
+        if (objectID != lwObject.objectID) return false;
+        if (parentID != lwObject.parentID) return false;
+        if (objectTypeID != lwObject.objectTypeID) return false;
+        if (!name.equals(lwObject.name)) return false;
+        return params.equals(lwObject.params);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = objectID;
+        result = 31 * result + parentID;
+        result = 31 * result + objectTypeID;
+        result = 31 * result + name.hashCode();
+        result = 31 * result + params.hashCode();
+        return result;
+    }
 }

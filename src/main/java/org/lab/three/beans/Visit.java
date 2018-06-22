@@ -1,5 +1,7 @@
 package org.lab.three.beans;
 
+import java.util.Objects;
+
 /**
  * Visit class is responsible for visit dates and evaluation on subjects
  */
@@ -81,5 +83,37 @@ public class Visit {
      */
     public void setMark(String mark) {
         this.mark = mark;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Visit visit = (Visit) o;
+
+        if (objectId != visit.objectId) return false;
+        if (lessonId != visit.lessonId) return false;
+        if (!date.equals(visit.date)) return false;
+        return mark.equals(visit.mark);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = objectId;
+        result = 31 * result + lessonId;
+        result = 31 * result + date.hashCode();
+        result = 31 * result + mark.hashCode();
+        return result;
+    }
+
+    @Override
+    public String toString() {
+        return "Visit{" +
+                "objectId=" + objectId +
+                ", lessonId=" + lessonId +
+                ", date='" + date + '\'' +
+                ", mark='" + mark + '\'' +
+                '}';
     }
 }
