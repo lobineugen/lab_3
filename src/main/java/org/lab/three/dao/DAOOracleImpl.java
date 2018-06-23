@@ -74,8 +74,16 @@ public class DAOOracleImpl implements DAO {
         try {
             if (connection != null)
                 connection.close();
+        } catch (SQLException e) {
+            LOGGER.error("Exception during disconnection from database", e);
+        }
+        try {
             if (preparedStatement != null)
                 preparedStatement.close();
+        } catch (SQLException e) {
+            LOGGER.error("Exception during disconnection from database", e);
+        }
+        try {
             if (resultSet != null)
                 resultSet.close();
         } catch (SQLException e) {
