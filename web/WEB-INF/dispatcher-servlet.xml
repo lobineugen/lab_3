@@ -11,9 +11,7 @@
     <mvc:annotation-driven />
     <mvc:resources mapping="/resources/**" location="/resources/" />
 
-
     <context:component-scan base-package="org.lab.three"/>
-    <bean id="dao" class="org.lab.three.dao.DAOOracleImpl"/>
 
     <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
         <property name="prefix" value="/WEB-INF/pages/"/>

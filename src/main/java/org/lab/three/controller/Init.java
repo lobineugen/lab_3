@@ -3,16 +3,20 @@ package org.lab.three.controller;
 import org.apache.log4j.Logger;
 import org.lab.three.dao.DAO;
 import org.lab.three.dao.DAOOracleImpl;
+import org.springframework.context.ApplicationContext;
+import org.springframework.web.context.WebApplicationContext;
 
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
+import javax.servlet.annotation.WebListener;
 
 /**
  * Init class checks necessity of script running
  */
+@WebListener
 public class Init implements ServletContextListener {
     private static final Logger LOGGER = Logger.getLogger(Init.class);
-    private final DAO dao = new DAOOracleImpl();
+
 
     /**
      * Runs SQL tables creation script under certain conditions
@@ -22,10 +26,10 @@ public class Init implements ServletContextListener {
     @Override
     public void contextInitialized(ServletContextEvent servletContextEvent) {
         LOGGER.debug("Initializing context");
-        int count = dao.checkTables();
-        if (count<7) {
-            dao.executeScript();
-        }
+        ApplicationContext applicationContext = (ApplicationContext)servletContextEvent.getServletContext().getAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE);
+
+        DAO dao = applicationContext.getBean(DAOOracleImpl.class);
+        dao.executeScript();
     }
 
     /**

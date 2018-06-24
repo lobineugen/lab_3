@@ -2,7 +2,7 @@ package org.lab.three.dao;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
-import com.ibatis.common.jdbc.ScriptRunner;
+import org.apache.ibatis.jdbc.ScriptRunner;
 import org.apache.log4j.Logger;
 import org.lab.three.beans.LWObject;
 import org.lab.three.beans.Visit;
@@ -332,16 +332,13 @@ public class DAOOracleImpl implements DAO {
         LOGGER.debug("Executing script");
         connect();
         URL script = DAOOracleImpl.class.getClassLoader().getResource("script.sql");
-        ScriptRunner scriptRunner = new ScriptRunner(connection, false, false);
+        ScriptRunner scriptRunner = new ScriptRunner(connection);
         try {
             Reader reader = new BufferedReader(new FileReader(script.getPath()));
+            scriptRunner.setSendFullScript(true);
             scriptRunner.runScript(reader);
-        } catch (SQLException e) {
-            LOGGER.error("SQLException while executing script", e);
         } catch (FileNotFoundException e) {
             LOGGER.error("FileNotFoundException while executing script", e);
-        } catch (IOException e) {
-            LOGGER.error("IOException while executing script", e);
         }
         disconnect();
     }
@@ -454,7 +451,7 @@ public class DAOOracleImpl implements DAO {
     public int getNextId() {
         int id = 0;
         try {
-            preparedStatement = connection.prepareStatement("SELECT sss.nextval AS id FROM dual");
+            preparedStatement = connection.prepareStatement("SELECT sequence_next_id.nextval AS id FROM dual");
             resultSet = preparedStatement.executeQuery();
             while (resultSet.next()) {
                 id = resultSet.getInt("id");
