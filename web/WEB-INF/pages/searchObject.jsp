@@ -15,13 +15,59 @@
     <script type="text/javascript">
         function getAttr() {
             $.ajax({
+                type: "post",
                 url : 'find',
+                cache: false,
                 data : { "o": document.getElementById("o").value, "ot":  document.getElementById("ot").value},
-                success : function(data) {
-                    $('#parameters').html(data);
+                success: function (data) {
+                    var table  = document.createElement("table");
+                    table.setAttribute("class","tbl");
+                    var tr = document.createElement("tr");
+                    var thNumber = document.createElement("th");
+                    thNumber.appendChild(document.createTextNode("№"));
+                    tr.appendChild(thNumber);
+                    var thObjectId = document.createElement("th");
+                    thObjectId.appendChild(document.createTextNode("ObjectID"));
+                    tr.appendChild(thObjectId);
+                    var thParentId = document.createElement("th");
+                    thParentId.appendChild(document.createTextNode("ParentID"));
+                    tr.appendChild(thParentId);
+                    var thName = document.createElement("th");
+                    thName.appendChild(document.createTextNode("Name"));
+                    tr.appendChild(thName);
+                    var thObjectTypeId = document.createElement("th");
+                    thObjectTypeId.appendChild(document.createTextNode("ObjectTypeID"));
+                    tr.appendChild(thObjectTypeId);
+                    table.appendChild(tr);
+                    $.each(data, function(index, object) {
+                        tr = document.createElement("tr");
+                        var td_id = document.createElement("td");
+                        var input = document.createElement("input");
+                        input.setAttribute("id","object_id");
+                        input.setAttribute("type","checkbox");
+                        input.setAttribute("name","object_id");
+                        input.setAttribute("value",object.parentID + "_" + object.objectID);
+                        td_id.appendChild(input);
+                        tr.appendChild(td_id);
+                        var object_id = document.createElement("td");
+                        object_id.appendChild(document.createTextNode(object.objectID));
+                        tr.appendChild(object_id);
+                        var name = document.createElement("td");
+                        name.appendChild(document.createTextNode(object.name));
+                        tr.appendChild(name);
+                        var parent_id = document.createElement("td");
+                        parent_id.appendChild(document.createTextNode(object.parentID));
+                        tr.appendChild(parent_id);
+                        var object_type_id = document.createElement("td");
+                        object_type_id.appendChild(document.createTextNode(object.objectTypeID));
+                        tr.appendChild(object_type_id);
+                        table.appendChild(tr);
+                    });
+                    $("#parameters").empty();
+                    $("#parameters").append(table);
                 }
             });
-        };
+        }
 
         function info_check() {
             if(checkBoxChecked() !== 1) {

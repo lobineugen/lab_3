@@ -13,7 +13,10 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * MainController class connects view and dao
@@ -21,12 +24,6 @@ import java.util.*;
 @Controller
 public class MainController {
     private static final Logger LOGGER = Logger.getLogger(MainController.class);
-    private static final String OPEN_TR = "<tr>";
-    private static final String CLOSE_TR = "</tr>";
-    private static final String OPEN_TH = "<th>";
-    private static final String CLOSE_TH = "</th>";
-    private static final String OPEN_TD = "<td>";
-    private static final String CLOSE_TD = "</td>";
     private static final String OBJ_ID = "objectId";
     private static final String LIST = "list";
     private static final String SHOW_ALL_OBJECTS = "showAllObjects";
@@ -214,19 +211,11 @@ public class MainController {
      *
      * @param objectType
      */
-    @RequestMapping(value = "/params", method = RequestMethod.GET)
+    @RequestMapping(value="/params", method=RequestMethod.POST,
+            produces="application/json")
     public @ResponseBody
-    String params(@RequestParam(value = "ot") String objectType) {
-        Map<Integer, String> map = dao.getAttrByObjectIdFromAOT(Integer.parseInt(objectType));
-        StringBuilder code = new StringBuilder(150);
-        for (Map.Entry<Integer, String> temp : map.entrySet()) {
-            code.append("<p><label>");
-            code.append(temp.getValue());
-            code.append(": <input type=\"text\" name=\"");
-            code.append(temp.getKey());
-            code.append("\" value=\"\" class='lft' required></label></p>");
-        }
-        return code.toString();
+    Map<Integer, String> params(@RequestParam(value = "ot") String objectType) {
+        return dao.getAttrByObjectIdFromAOT(Integer.parseInt(objectType));
     }
 
     /**
@@ -271,76 +260,37 @@ public class MainController {
         return new ModelAndView("visitPage", "lessons", lessons);
     }
 
+
+
     /**
      * Shows lesson conducting dates
      *
      * @param lessonId
      */
-    @RequestMapping(value = "/lesson", method = RequestMethod.GET)
+    @RequestMapping(value="/lesson", method=RequestMethod.POST,
+            produces="application/json")
     public @ResponseBody
-    String getStudents(@RequestParam(value = "lesson") int lessonId) {
+    Map<Integer, String>  getLessons(@RequestParam(value = "lesson") int lessonId) {
         LOGGER.debug("Lesson");
-        StringBuilder code = new StringBuilder(250);
-        Map<Integer, String> students = dao.getStudentsByLessonId(lessonId);
-        List<Visit> list = dao.getVisitByLessonId(lessonId);
-        List<String> dateList = dao.getDistinctDateByLessonId(lessonId);
-        code.append("<table class='tbl' id='my-table'><tr><th>Name</th>");
-        for (String aDateSet : dateList) {
-            code.append("<td><div class='date'>");
-            code.append(aDateSet);
-            code.append("</div></td>");
-        }
-        code.append(CLOSE_TR);
-        if (students.isEmpty()) {
-            code.append("Students not found for this lesson");
-        } else {
-            int numb = 1;
-            int count = 0;
-            for (Map.Entry<Integer, String> map : students.entrySet()) {
-                code.append(OPEN_TR + OPEN_TD);
-                code.append("<input id='object");
-                code.append(numb++);
-                code.append("' type='hidden' name='objectId' value='");
-                code.append(map.getKey());
-                code.append("'>");
-                code.append(map.getValue());
-                code.append(CLOSE_TD);
-                for (String date : dateList) {
-                    for (Visit visit : list) {
-                        if (visit.getDate().equals(date) && visit.getObjectId() == map.getKey()) {
-                            code.append(OPEN_TD);
-                            code.append("<input type='text' name='");
-                            code.append(map.getKey());
-                            code.append('_');
-                            code.append(date);
-                            code.append("' value='");
-                            code.append(visit.getMark());
-                            code.append("'>");
-                            code.append(CLOSE_TD);
-                            count = 0;
-                            break;
-                        } else {
-                            count = 1;
-                        }
-                    }
-                    if (count == 1) {
-                        code.append(OPEN_TD);
-                        code.append("<input type='text' name='");
-                        code.append(map.getKey());
-                        code.append('_');
-                        code.append(date);
-                        code.append("' value='-' readonly>");
-                        code.append(CLOSE_TD);
-                        count = 0;
-                    }
-                }
-
-                code.append(CLOSE_TR);
-            }
-        }
-        code.append("</table>");
-        return code.toString();
+        return dao.getStudentsByLessonId(lessonId);
     }
+
+    @RequestMapping(value="/lesson_visits", method=RequestMethod.POST,
+            produces="application/json")
+    public @ResponseBody
+    List<Visit>  getVisits(@RequestParam(value = "lesson") int lessonId) {
+        LOGGER.debug("Lesson");
+        return dao.getVisitByLessonId(lessonId);
+    }
+
+    @RequestMapping(value="/lesson_date", method=RequestMethod.POST,
+            produces="application/json")
+    public @ResponseBody
+    List<String>  getDate(@RequestParam(value = "lesson") int lessonId) {
+        LOGGER.debug("Lesson");
+        return dao.getDistinctDateByLessonId(lessonId);
+    }
+
 
     /**
      * Saves new dates of lesson conducting and shows visit page
@@ -384,37 +334,12 @@ public class MainController {
      * @param name
      * @param typeID
      */
-    @RequestMapping(value = "/find", method = RequestMethod.GET)
+    @RequestMapping(value="/find", method=RequestMethod.POST,
+            produces="application/json")
     public @ResponseBody
-    String find(@RequestParam(value = "o") String name,
-                @RequestParam(value = "ot") int typeID) {
-        List<LWObject> list = dao.getLWObjectByNameAndType(name, typeID);
-        StringBuilder code = new StringBuilder();
-        if (list.isEmpty()) {
-            code.append("No matches found");
-        } else {
-            code.append("<table class='tbl'>");
-            code.append(OPEN_TR);
-            code.append(OPEN_TH + "N" + CLOSE_TH);
-            code.append(OPEN_TH + "ObjectID" + CLOSE_TH);
-            code.append(OPEN_TH + "ParentID" + CLOSE_TH);
-            code.append(OPEN_TH + "Name" + CLOSE_TH);
-            code.append(OPEN_TH + "ObjectTypeID" + CLOSE_TH);
-            code.append(CLOSE_TR);
-            for (LWObject lwObject : list) {
-                code.append(OPEN_TR);
-                code.append(OPEN_TD).append("<input id='object_id' type='checkbox' name='object_id' value='").
-                        append(lwObject.getParentID()).append('_').append(lwObject.getObjectID()).append("'>").
-                        append(CLOSE_TD);
-                code.append(OPEN_TD).append(lwObject.getObjectID()).append(CLOSE_TD);
-                code.append(OPEN_TD).append(lwObject.getParentID()).append(CLOSE_TD);
-                code.append(OPEN_TD).append(lwObject.getName()).append(CLOSE_TD);
-                code.append(OPEN_TD).append(lwObject.getObjectTypeID()).append(CLOSE_TD);
-                code.append(CLOSE_TR);
-            }
-            code.append("</table>");
-        }
-        return code.toString();
+    List<LWObject> find(@RequestParam(value = "o") String name,
+                @RequestParam(value = "ot") int typeID ) {
+        return dao.getLWObjectByNameAndType(name, typeID);
     }
 
     /**

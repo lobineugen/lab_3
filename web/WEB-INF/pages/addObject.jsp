@@ -15,10 +15,26 @@
 
         function getAttr() {
             $.ajax({
+                type: "post",
                 url : 'params',
+                cache: false,
                 data : 'ot=' + document.getElementById("ot").value,
                 success : function(data) {
-                    $('#parameters').html(data);
+                    $('#parameters').empty();
+                    $.each(data, function(key, value) {
+                        var p = document.createElement("p");
+                        var label = document.createElement("label");
+                        label.appendChild(document.createTextNode(value+": "));
+                        var input = document.createElement("input");
+                        input.setAttribute("type","text");
+                        input.setAttribute("name",key);
+                        input.setAttribute("value","");
+                        input.setAttribute("class","lft");
+                        input.setAttribute("required","true");
+                        label.appendChild(input);
+                        p.appendChild(label);
+                        $('#parameters').append(p);
+                    });
                     $('.display').show();
                 }
             });

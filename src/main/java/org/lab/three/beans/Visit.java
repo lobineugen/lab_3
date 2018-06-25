@@ -1,7 +1,5 @@
 package org.lab.three.beans;
 
-import java.util.Objects;
-
 /**
  * Visit class is responsible for visit dates and evaluation on subjects
  */
