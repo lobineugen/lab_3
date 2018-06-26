@@ -73,7 +73,7 @@ begin
       attr_id number(20) not null,
     value varchar2(20),
     constraint params_attr_fk foreign key (attr_id) references lw_attr(attr_id),
-    constraint params_objects_fk foreign key (object_id) references lw_objects(object_id)
+    constraint params_objects_fk foreign key (object_id) references lw_objects(object_id) on delete cascade
       )';
 
     execute immediate 'create table lw_visit (

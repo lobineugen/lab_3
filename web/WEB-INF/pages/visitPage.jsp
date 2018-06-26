@@ -9,7 +9,7 @@
 <%@ page errorPage="errorPage.jsp" %>
 <html>
 <head>
-    <title>Students visit</title>
+    <title>Students Visit</title>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/datejs/1.0/date.min.js"></script>
     <script type="text/javascript">

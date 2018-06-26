@@ -1,16 +1,10 @@
 package org.lab.three.dao;
 
-import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.Multimap;
 import org.apache.ibatis.jdbc.ScriptRunner;
 import org.apache.log4j.Logger;
-import org.lab.three.beans.LWObject;
-import org.lab.three.beans.Visit;
+import org.lab.three.connect.OracleConnect;
+import org.springframework.stereotype.Service;
 
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
-import javax.sql.DataSource;
 import java.io.*;
 import java.net.URL;
 import java.sql.*;
@@ -19,181 +13,20 @@ import java.util.*;
 /**
  * DAOOracleImpl class organizes work with database
  */
+@Service
 public class DAOOracleImpl implements DAO {
     private Connection connection;
     private PreparedStatement preparedStatement;
     private ResultSet resultSet;
-    private static final String NAME = "name";
-    private static final String OBJECT_ID = "object_id";
-    private static final String OBJECT_TYPE_ID = "object_type_id";
-    private static String datasourceName;
-    private static final String DATASOURCE_PROPERTIES_PATH = "application.properties";
+    public static final String NAME = "name";
+    public static final String OBJECT_ID = "object_id";
+    public static final String OBJECT_TYPE_ID = "object_type_id";
     private static final Logger LOGGER = Logger.getLogger(DAOOracleImpl.class);
-
-    /**
-     * connects to database
-     */
-    private void connect() {
-        LOGGER.debug("Connecting to database");
-        uploadDatasourceProperties();
-        Hashtable hashtable = new Hashtable();
-        hashtable.put(Context.INITIAL_CONTEXT_FACTORY, "weblogic.jndi.WLInitialContextFactory");
-        hashtable.put(Context.PROVIDER_URL, "t3://localhost:7001");
-        try {
-            Context context = new InitialContext(hashtable);
-            DataSource dataSource = (DataSource) context.lookup(datasourceName);
-            connection = dataSource.getConnection();
-            if (!connection.isClosed()) {
-                LOGGER.info("Connection successful");
-            }
-        } catch (NamingException | SQLException e) {
-            LOGGER.error("Exception during connection to database", e);
-        }
-    }
-
-    /**
-     * uploads datasourceName name from file
-     */
-    private void uploadDatasourceProperties() {
-        ClassLoader classLoader = getClass().getClassLoader();
-        InputStream socketProperties = classLoader.getResourceAsStream(DATASOURCE_PROPERTIES_PATH);
-        Properties properties = new Properties();
-        try {
-            properties.load(socketProperties);
-        } catch (IOException e) {
-            LOGGER.error("Can't load application.properties", e);
-        }
-        datasourceName = properties.getProperty("datasourceName");
-    }
-
-    /**
-     * disconnects from database
-     */
-    private void disconnect() {
-        LOGGER.debug("Disconnecting from database");
-        try {
-            if (connection != null)
-                connection.close();
-        } catch (SQLException e) {
-            LOGGER.error("Exception during disconnection from database", e);
-        }
-        try {
-            if (preparedStatement != null)
-                preparedStatement.close();
-        } catch (SQLException e) {
-            LOGGER.error("Exception during disconnection from database", e);
-        }
-        try {
-            if (resultSet != null)
-                resultSet.close();
-        } catch (SQLException e) {
-            LOGGER.error("Exception during disconnection from database", e);
-        }
-    }
-
-    /**
-     * returns list of top objects
-     * @return list
-     */
-    public List<LWObject> getTopObject() {
-        LOGGER.debug("Getting top objects");
-        connect();
-        List<LWObject> list = new ArrayList<>();
-        try {
-            preparedStatement = connection.prepareStatement("SELECT o.* FROM LW_OBJECTS o WHERE o.object_type_id = 1");
-            resultSet = preparedStatement.executeQuery();
-            while (resultSet.next()) {
-                list.add(parseObject(resultSet));
-            }
-        } catch (SQLException e) {
-            LOGGER.error("Exception while getting top objects", e);
-        }
-
-        disconnect();
-        return list;
-    }
-
-    /**
-     * returns list of child objects
-     * @param objectID
-     * @return list
-     */
-    public List<LWObject> getChildren(int objectID) {
-        LOGGER.debug("Getting children objects");
-        connect();
-        List<LWObject> list = new ArrayList<>();
-        try {
-            preparedStatement = connection.prepareStatement("SELECT o.object_id, o.parent_id, o.object_type_id,\n" +
-                    "CASE WHEN o.object_type_id = 4 OR o.object_type_id = 5 \n" +
-                    "THEN o.name || ' ' || (SELECT value FROM lw_params WHERE attr_id = 4 AND object_id = o.object_id)\n" +
-                    "ELSE o.name END AS name\n" +
-                    "FROM lw_objects o WHERE o.parent_id = ?");
-            preparedStatement.setInt(1, objectID);
-            resultSet = preparedStatement.executeQuery();
-            while (resultSet.next()) {
-                list.add(parseObject(resultSet));
-            }
-        } catch (SQLException e) {
-            LOGGER.error("Exception while getting children objects", e);
-        }
-
-        disconnect();
-        return list;
-    }
-
-    /**
-     * removes object by ID
-     * @param objectID
-     * @param parentID
-     * @return list
-     */
-    @Override
-    public List<LWObject> removeByID(int[] objectID, String parentID) {
-        LOGGER.debug("Removing object by ID");
-        connect();
-        List<LWObject> list = new ArrayList<>();
-        Object[] newArray = new Object[objectID.length];
-        for (int i = 0;i<objectID.length;i++) {
-            newArray[i] = objectID[i];
-        }
-        try {
-            if (objectID.length > 0) {
-                preparedStatement = connection.prepareStatement("delete from lw_objects where object_id in (?)");
-                Array array = connection.createArrayOf("NUMBER",newArray);
-                preparedStatement.setArray(1,array);
-                preparedStatement.executeUpdate();
-            }
-            preparedStatement = connection.prepareStatement("SELECT * FROM lw_objects WHERE parent_id = ?");
-            preparedStatement.setInt(1, Integer.parseInt(parentID));
-            resultSet = preparedStatement.executeQuery();
-            while (resultSet.next()) {
-                list.add(parseObject(resultSet));
-            }
-            String quer = "select * from lw_objects " +
-                    "where parent_id = (select parent_id from lw_objects where object_id = " + parentID + ")";
-            if ("0".equals(parentID)) {
-                quer = "SELECT * FROM lw_objects " +
-                        "WHERE parent_id IS NULL ";
-            }
-            if (list.isEmpty()) {
-                preparedStatement = connection.prepareStatement(quer);
-                resultSet = preparedStatement.executeQuery();
-                while (resultSet.next()) {
-                    list.add(parseObject(resultSet));
-                }
-                if (list.isEmpty()) {
-                    list = getTopObject();
-                }
-            }
-        } catch (SQLException e) {
-            LOGGER.error("Exception while removing object by ID", e);
-        }
-        disconnect();
-        return list;
-    }
+    private OracleConnect oracleConnect;
 
     /**
      * creates object
+     *
      * @param name
      * @param parentId
      * @param objectType
@@ -202,7 +35,7 @@ public class DAOOracleImpl implements DAO {
     @Override
     public int createObject(String name, String parentId, String objectType) {
         LOGGER.debug("Creating object");
-        connect();
+        connection = oracleConnect.connect();
         int objectID = getNextId();
         String objectT = objectType;
         String parID = parentId;
@@ -213,9 +46,9 @@ public class DAOOracleImpl implements DAO {
             if ("null".equals(objectT)) {
                 objectT = "1";
             }
-            preparedStatement = connection.prepareStatement("INSERT INTO LW_OBJECTS VALUES (?," + parID + ",?,?)");
+            preparedStatement = connection.prepareStatement("INSERT INTO LW_OBJECTS VALUES (?,?,?,?)");
             preparedStatement.setInt(1, objectID);
-            if (parID == null) {
+            if ("null".equals(parID)) {
                 preparedStatement.setNull(2, Types.INTEGER);
             } else {
                 preparedStatement.setInt(2, Integer.parseInt(parID));
@@ -227,19 +60,20 @@ public class DAOOracleImpl implements DAO {
         } catch (SQLException e) {
             LOGGER.error("Exception while creating object", e);
         }
-        disconnect();
+        oracleConnect.disconnect(connection, preparedStatement, resultSet);
         return objectID;
     }
 
     /**
      * returns HashMap with OBJECT_TYPE_ID and OBJECT_TYPE
+     *
      * @param parentId
      * @return map
      */
     @Override
     public Map<Integer, String> getObjectTypes(int parentId) {
         LOGGER.debug("Getting object type");
-        connect();
+        connection = oracleConnect.connect();
         Map<Integer, String> map = new HashMap<>();
         try {
             preparedStatement = connection.prepareStatement("SELECT object_type_id,name FROM lw_object_types " +
@@ -253,66 +87,16 @@ public class DAOOracleImpl implements DAO {
         } catch (SQLException e) {
             LOGGER.error("Exception while getting object type", e);
         }
-        disconnect();
+        oracleConnect.disconnect(connection, preparedStatement, resultSet);
         return map;
-    }
-
-    /**
-     * returns object by ID
-     * @param objectId
-     * @return object
-     */
-    @Override
-    public LWObject getObjectById(int objectId) {
-        LOGGER.debug("Getting object by ID");
-        connect();
-        LWObject lwObject = null;
-        try {
-            preparedStatement = connection.prepareStatement("SELECT * FROM LW_OBJECTS WHERE OBJECT_ID=?");
-            preparedStatement.setInt(1, objectId);
-            resultSet = preparedStatement.executeQuery();
-            while (resultSet.next()) {
-                lwObject = parseObject(resultSet);
-            }
-
-        } catch (SQLException e) {
-            LOGGER.error("Exception while getting object by ID", e);
-        }
-        disconnect();
-        return lwObject;
-    }
-
-    /**
-     * changes object name by ID
-     * @param objectId
-     * @param name
-     * @return list
-     */
-    @Override
-    public List<LWObject> changeNameById(int objectId, String name) {
-        LOGGER.debug("Changing name by ID");
-        connect();
-        List<LWObject> list = new ArrayList<>();
-        try {
-            preparedStatement = connection.prepareStatement("UPDATE lw_objects SET name=? WHERE OBJECT_ID = ?");
-            preparedStatement.setString(1, name);
-            preparedStatement.setInt(2, objectId);
-            preparedStatement.executeUpdate();
-            list = getObjectsListByObject(objectId);
-        } catch (SQLException e) {
-            LOGGER.error("Exception while changing name by ID", e);
-        }
-        disconnect();
-        return list;
     }
 
     /**
      * executes SQL script
      */
     @Override
-    public void executeScript() {
+    public void executeScript(Connection connection) {
         LOGGER.debug("Executing script");
-        connect();
         URL script = DAOOracleImpl.class.getClassLoader().getResource("script.sql");
         ScriptRunner scriptRunner = new ScriptRunner(connection);
         try {
@@ -322,40 +106,18 @@ public class DAOOracleImpl implements DAO {
         } catch (FileNotFoundException e) {
             LOGGER.error("FileNotFoundException while executing script", e);
         }
-        disconnect();
     }
 
-    /**
-     * returns collection of all object parameters
-     * @param objectId
-     * @return collection
-     */
-    @Override
-    public Multimap<String, String> getParamsById(int objectId) {
-        Multimap<String, String> arrays = ArrayListMultimap.create();
-        try {
-            preparedStatement = connection.prepareStatement("SELECT a.attr_id,a.name, p.value FROM lw_params p, lw_attr a WHERE a.attr_id = p.attr_id  AND object_id = ?");
-            preparedStatement.setInt(1, objectId);
-            ResultSet resultSet = preparedStatement.executeQuery();
-            while (resultSet.next()) {
-                arrays.put(resultSet.getInt("attr_id") + "_" + resultSet.getString(NAME),
-                        resultSet.getString("value"));
-            }
-
-        } catch (SQLException e) {
-            LOGGER.error("Exception get params by id ", e);
-        }
-        return arrays;
-    }
 
     /**
      * returns list of object attribute IDs
+     *
      * @param objectId
      * @return list
      */
     @Override
     public ArrayList<Integer> getAttrByObjectIdFromParams(int objectId) {
-        connect();
+        connection = oracleConnect.connect();
         ArrayList<Integer> arrayList = new ArrayList<>();
         try {
             preparedStatement = connection.prepareStatement("SELECT attr_id FROM lw_aot " +
@@ -368,19 +130,20 @@ public class DAOOracleImpl implements DAO {
         } catch (SQLException e) {
             LOGGER.error("Exception get attr by object id", e);
         }
-        disconnect();
+        oracleConnect.disconnect(connection, preparedStatement, resultSet);
         return arrayList;
     }
 
     /**
      * updates object parameters table data
+     *
      * @param objectId
      * @param attrID
      * @param value
      */
     @Override
     public void updateParams(int objectId, int attrID, String value) {
-        connect();
+        connection = oracleConnect.connect();
         try {
             if (!value.isEmpty()) {
                 preparedStatement = connection.prepareStatement("MERGE INTO lw_params p " +
@@ -398,17 +161,18 @@ public class DAOOracleImpl implements DAO {
         } catch (SQLException e) {
             LOGGER.error("Exception update params", e);
         }
-        disconnect();
+        oracleConnect.disconnect(connection, preparedStatement, resultSet);
     }
 
     /**
      * returns data from lw_attr table by objectType
+     *
      * @param objectType
      * @return map
      */
     @Override
     public Map<Integer, String> getAttrByObjectIdFromAOT(int objectType) {
-        connect();
+        connection = oracleConnect.connect();
         Map<Integer, String> map = new HashMap<>();
         try {
             preparedStatement = connection.prepareStatement("SELECT a.attr_id, a.name FROM lw_aot aot, lw_attr a\n " +
@@ -421,12 +185,13 @@ public class DAOOracleImpl implements DAO {
         } catch (SQLException e) {
             LOGGER.error("Exception update params", e);
         }
-        disconnect();
+        oracleConnect.disconnect(connection, preparedStatement, resultSet);
         return map;
     }
 
     /**
      * returns next ID
+     *
      * @return id
      */
     @Override
@@ -445,185 +210,14 @@ public class DAOOracleImpl implements DAO {
     }
 
     /**
-     * returns objects list by object
-     * @param objectId
-     * @return list
-     */
-    @Override
-    public List<LWObject> getObjectsListByObject(int objectId) {
-
-        List<LWObject> list = new ArrayList<>();
-        try {
-            if (objectId == 0) {
-                list = getTopObject();
-            } else {
-                connect();
-                preparedStatement = connection.prepareStatement("SELECT object_type_id FROM LW_OBJECTS WHERE OBJECT_ID = ?");
-                preparedStatement.setInt(1, objectId);
-                resultSet = preparedStatement.executeQuery();
-                int objectTypeID = 0;
-                while (resultSet.next()) {
-                    objectTypeID = resultSet.getInt(OBJECT_TYPE_ID);
-                }
-                disconnect();
-                if (objectTypeID == 1) {
-                    list = getTopObject();
-                } else {
-                    connect();
-                    preparedStatement = connection.prepareStatement("SELECT o.object_id, o.parent_id, o.object_type_id,\n" +
-                            "CASE WHEN o.object_type_id = 4 OR o.object_type_id = 5\n" +
-                            "THEN o.name || ' ' || (SELECT value FROM lw_params WHERE attr_id = 4 AND object_id = o.object_id)\n" +
-                            "ELSE o.name END AS name\n" +
-                            "FROM lw_objects o WHERE o.parent_id = (SELECT parent_id FROM lw_objects WHERE object_id = ?)");
-                    preparedStatement.setInt(1, objectId);
-                    resultSet = preparedStatement.executeQuery();
-                    while (resultSet.next()) {
-                        list.add(parseObject(resultSet));
-                    }
-                    disconnect();
-                }
-            }
-
-        } catch (SQLException e) {
-            LOGGER.error("Exception get objects ", e);
-        }
-        disconnect();
-        return list;
-    }
-
-    /**
-     * returns objects id and name map by object type
-     * @param objectType
-     * @return map
-     */
-    @Override
-    public Map<Integer, String> getObjectsByObjectType(int objectType) {
-        Map<Integer, String> objects = new HashMap<>();
-        connect();
-        try {
-            preparedStatement = connection.prepareStatement("SELECT object_id, name FROM LW_OBJECTS WHERE OBJECT_TYPE_ID = ?");
-            preparedStatement.setInt(1, objectType);
-            resultSet = preparedStatement.executeQuery();
-            while (resultSet.next()) {
-                objects.put(resultSet.getInt(OBJECT_ID), resultSet.getString(NAME));
-            }
-        } catch (SQLException e) {
-            LOGGER.error("Exception get objects by object type id ", e);
-        }
-        disconnect();
-        return objects;
-    }
-
-    /**
-     * returns students id and name map for particular lesson
-     * @param lessonId
-     * @return map
-     */
-    @Override
-    public Map<Integer, String> getStudentsByLessonId(int lessonId) {
-        Map<Integer, String> map = new HashMap<>();
-        connect();
-        try {
-            preparedStatement = connection.prepareStatement("SELECT o.object_id, o.name " +
-                    "FROM lw_params p, lw_objects o " +
-                    "WHERE p.attr_id = 9 AND p.value = ? AND p.object_id = o.object_id");
-            preparedStatement.setString(1, String.valueOf(lessonId));
-            resultSet = preparedStatement.executeQuery();
-            while (resultSet.next()) {
-                map.put(resultSet.getInt(OBJECT_ID),
-                        resultSet.getString(NAME));
-            }
-        } catch (SQLException e) {
-            LOGGER.error("Exception get students by lesson id ", e);
-        }
-        disconnect();
-        return map;
-    }
-
-    /**
-     * inserts data into lw_visit table
-     * @param lessonId
-     * @param objectId
-     * @param date
-     * @param value
-     */
-    @Override
-    public void insertVisit(String lessonId, String objectId, String date, String value) {
-        connect();
-        try {
-            preparedStatement = connection.prepareStatement("MERGE INTO lw_visit d\n" +
-                    "USING (SELECT ? AS object_id, ? AS lesson_id, ? AS editDate, ? AS mark FROM dual) s\n" +
-                    "ON (d.object_id = s.object_id AND d.lesson_id = s.lesson_id AND d.editDate = s.editDate)\n" +
-                    "WHEN MATCHED THEN UPDATE SET d.mark = s.mark\n" +
-                    "WHEN NOT MATCHED THEN INSERT VALUES (s.object_id,s.lesson_id, s.editDate, s.mark)");
-            preparedStatement.setInt(1, Integer.parseInt(objectId));
-            preparedStatement.setInt(2, Integer.parseInt(lessonId));
-            preparedStatement.setString(3, date);
-            preparedStatement.setString(4, value);
-            preparedStatement.executeQuery();
-        } catch (SQLException e) {
-            LOGGER.error("Exception with merge into visit", e);
-        }
-        disconnect();
-    }
-
-    /**
-     * returns list of visits by lesson id
-     * @param lessonId
-     * @return list
-     */
-    @Override
-    public List<Visit> getVisitByLessonId(int lessonId) {
-        List<Visit> list = new ArrayList<>();
-        connect();
-        try {
-            preparedStatement = connection.prepareStatement("SELECT OBJECT_ID,LESSON_ID,EDITDATE,MARK FROM lw_visit WHERE lesson_id = ?");
-            preparedStatement.setInt(1, lessonId);
-            resultSet = preparedStatement.executeQuery();
-            while (resultSet.next()) {
-                list.add(new Visit(resultSet.getInt(OBJECT_ID),
-                        resultSet.getInt("lesson_id"),
-                        resultSet.getString("editDate"),
-                        resultSet.getString("mark")));
-            }
-        } catch (SQLException e) {
-            LOGGER.error("Exception with select from visit", e);
-        }
-        disconnect();
-        return list;
-    }
-
-    /**
-     * returns list of unique dates by lesson id
-     * @param lessonId
-     * @return list
-     */
-    @Override
-    public List<String> getDistinctDateByLessonId(int lessonId) {
-        connect();
-        List<String> list = new ArrayList<>();
-        try {
-            preparedStatement = connection.prepareStatement("SELECT DISTINCT editDate FROM lw_visit WHERE LESSON_ID=? ORDER BY to_date(editDate,'dd.mm.yyyy')");
-            preparedStatement.setInt(1, lessonId);
-            resultSet = preparedStatement.executeQuery();
-            while (resultSet.next()) {
-                list.add(resultSet.getString("editDate"));
-            }
-        } catch (SQLException e) {
-            LOGGER.error("Exception with select from visit", e);
-        }
-        disconnect();
-        return list;
-    }
-
-    /**
      * returns role right by role name
+     *
      * @param name
      * @return role right
      */
     @Override
     public String getRightByUserName(String name) {
-        connect();
+        connection = oracleConnect.connect();
         String right = "";
         try {
             preparedStatement = connection.prepareStatement("SELECT right FROM lw_right WHERE name = ?");
@@ -642,78 +236,42 @@ public class DAOOracleImpl implements DAO {
         } catch (SQLException e) {
             LOGGER.error("Exception with select right for user", e);
         }
-        disconnect();
+        oracleConnect.disconnect(connection, preparedStatement, resultSet);
         return right;
     }
 
     /**
      * returns object name by object id
+     *
      * @param objectId
      * @return object name
      */
     @Override
     public String getNameById(int objectId) {
-        connect();
+        connection = oracleConnect.connect();
         String name = "";
         try {
             preparedStatement = connection.prepareStatement("SELECT name FROM lw_objects WHERE object_id = ?");
             preparedStatement.setInt(1, objectId);
-            resultSet = preparedStatement.executeQuery();
-            while (resultSet.next()) {
+            while (preparedStatement.executeQuery().next()) {
                 name = resultSet.getString(NAME);
             }
-
         } catch (SQLException e) {
             LOGGER.error("Exception with select right for user", e);
         }
-        disconnect();
+        oracleConnect.disconnect(connection, preparedStatement, resultSet);
         return name;
     }
 
     /**
-     * deletes lessons from lw_params table
-     * @param objectId
-     */
-    @Override
-    public void deleteAllLessons(int objectId) {
-        connect();
-        try {
-            preparedStatement = connection.prepareStatement("DELETE FROM lw_params WHERE object_id = ? AND attr_id = 9");
-            preparedStatement.setInt(1, objectId);
-            preparedStatement.executeUpdate();
-        } catch (SQLException e) {
-            LOGGER.error("Exception with deleted lessons", e);
-        }
-        disconnect();
-    }
-
-    /**
-     * updates lessons data in lw_params table
-     * @param objectId
-     * @param value
-     */
-    @Override
-    public void updateLessons(int objectId, String value) {
-        connect();
-        try {
-            preparedStatement = connection.prepareStatement("INSERT INTO lw_params VALUES (?,9,?)");
-            preparedStatement.setInt(1, objectId);
-            preparedStatement.setString(2, value);
-            preparedStatement.executeUpdate();
-        } catch (SQLException e) {
-            LOGGER.error("Exception with deleted lessons", e);
-        }
-        disconnect();
-    }
-
-    /**
      * returns path to object in map of object id and name
+     *
      * @param parentID
-     * @return  map
+     * @return map
      */
     @Override
     public Map<Integer, String> getPath(int parentID) {
-        connect();
+        connection = oracleConnect.connect();
         Map<Integer, String> map = new HashMap<>();
         try {
             preparedStatement = connection.prepareStatement("SELECT level, o.object_id, o.name, o.object_type_id FROM lw_objects o START WITH o.object_id = ? CONNECT BY PRIOR  o.parent_id = o.object_id\n" +
@@ -729,100 +287,12 @@ public class DAOOracleImpl implements DAO {
         } catch (SQLException e) {
             LOGGER.error("Exception with get path", e);
         }
-        disconnect();
+        oracleConnect.disconnect(connection, preparedStatement, resultSet);
         return map;
     }
 
-    /**
-     * returns list of parent objects by children
-     * @param objectID
-     * @return list
-     */
-    @Override
-    public List<LWObject> getParentByChildren(int objectID) {
-        connect();
-        List<LWObject> list = new ArrayList<>();
-        try {
-            preparedStatement = connection.prepareStatement("select * from lw_objects where parent_id = (select parent_id from lw_objects where object_id = ?)");
-            preparedStatement.setInt(1, objectID);
-            resultSet = preparedStatement.executeQuery();
-            while (resultSet.next()) {
-                list.add(parseObject(resultSet));
-            }
-        } catch (SQLException e) {
-            LOGGER.error("Exception with get path", e);
-        }
-        disconnect();
-        return list;
-    }
 
-    /**
-     * returns new object creating from resultSet
-     * @param resultSet
-     * @return object
-     */
-    private LWObject parseObject(ResultSet resultSet) throws SQLException {
-        LOGGER.debug("Parsing object");
-        int objectID = resultSet.getInt(OBJECT_ID);
-        Multimap<String, String> map = getParamsById(objectID);
-        return new LWObject(objectID,
-                resultSet.getInt("parent_id"),
-                resultSet.getInt(OBJECT_TYPE_ID),
-                resultSet.getString(NAME), map);
-    }
-
-    /**
-     * returns map with object type id and name of all object types
-     * @return map
-     */
-    @Override
-    public Map<Integer, String> getAllObjectTypes() {
-        LOGGER.debug("Getting object type");
-        connect();
-        Map<Integer, String> map = new HashMap<>();
-        try {
-            preparedStatement = connection.prepareStatement("SELECT object_type_id, name FROM lw_object_types" +
-                    " ORDER BY object_type_id");
-            resultSet = preparedStatement.executeQuery();
-            while (resultSet.next()) {
-                map.put(resultSet.getInt(OBJECT_TYPE_ID), resultSet.getString(NAME));
-            }
-        } catch (SQLException e) {
-            LOGGER.error("Exception while getting all object types", e);
-        }
-        disconnect();
-        return map;
-    }
-
-    /**
-     * returns list of objects by list and type
-     * @param objectName
-     * @param objectTypeID
-     * @return list
-     */
-    @Override
-    public List<LWObject> getLWObjectByNameAndType(String objectName, int objectTypeID) {
-        LOGGER.debug("Getting object");
-        connect();
-        List<LWObject> list = new ArrayList<>();
-        try {
-            preparedStatement = connection.prepareStatement("SELECT * FROM (\n" +
-                    "SELECT o.object_id, o.parent_id, o.object_type_id,\n" +
-                    "CASE WHEN o.object_type_id = 4 OR o.object_type_id = 5 \n" +
-                    "THEN o.name || ' ' || (SELECT value FROM lw_params WHERE attr_id = 4 AND object_id = o.object_id) \n" +
-                    "ELSE o.name END AS name \n" +
-                    "FROM lw_objects o \n" +
-                    ") WHERE object_type_id = ? AND upper(name) LIKE '%'||upper(?)||'%'");
-            preparedStatement.setString(1, String.valueOf(objectTypeID));
-            preparedStatement.setString(2, objectName);
-            resultSet = preparedStatement.executeQuery();
-            while (resultSet.next()) {
-                list.add(parseObject(resultSet));
-            }
-        } catch (SQLException e) {
-            LOGGER.error("Exception while getting object", e);
-        }
-        disconnect();
-        return list;
+    public void setOracleConnect(OracleConnect oracleConnect) {
+        this.oracleConnect = oracleConnect;
     }
 }

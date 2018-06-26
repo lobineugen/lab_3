@@ -1,22 +1,22 @@
 package org.lab.three.beans;
 
 /**
- * Visit class is responsible for visit dates and evaluation on subjects
+ * LWVisit class is responsible for visit dates and evaluation on subjects
  */
-public class Visit {
+public class LWVisit {
     private int objectId;
     private int lessonId;
     private String date;
     private String mark;
 
-    public Visit(int objectId, int lessonId, String date, String mark) {
+    public LWVisit(int objectId, int lessonId, String date, String mark) {
         this.objectId = objectId;
         this.lessonId = lessonId;
         this.date = date;
         this.mark = mark;
     }
 
-    public Visit() {
+    public LWVisit() {
     }
 
     /**
@@ -88,12 +88,12 @@ public class Visit {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        Visit visit = (Visit) o;
+        LWVisit LWVisit = (LWVisit) o;
 
-        if (objectId != visit.objectId) return false;
-        if (lessonId != visit.lessonId) return false;
-        if (!date.equals(visit.date)) return false;
-        return mark.equals(visit.mark);
+        if (objectId != LWVisit.objectId) return false;
+        if (lessonId != LWVisit.lessonId) return false;
+        if (!date.equals(LWVisit.date)) return false;
+        return mark.equals(LWVisit.mark);
     }
 
     @Override
@@ -107,7 +107,7 @@ public class Visit {
 
     @Override
     public String toString() {
-        return "Visit{" +
+        return "LWVisit{" +
                 "objectId=" + objectId +
                 ", lessonId=" + lessonId +
                 ", date='" + date + '\'' +

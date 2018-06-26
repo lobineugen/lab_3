@@ -2,8 +2,11 @@ package org.lab.three.controller;
 
 import org.apache.log4j.Logger;
 import org.lab.three.beans.LWObject;
-import org.lab.three.beans.Visit;
+import org.lab.three.beans.LWVisit;
 import org.lab.three.dao.DAO;
+import org.lab.three.dao.Lessons;
+import org.lab.three.dao.Objects;
+import org.lab.three.dao.Visit;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -28,9 +31,14 @@ public class MainController {
     private static final String LIST = "list";
     private static final String SHOW_ALL_OBJECTS = "showAllObjects";
     private static final String OBJECT_ID = "object_id";
-
     @Autowired
     private DAO dao;
+    @Autowired
+    private Visit visit;
+    @Autowired
+    private Lessons lessons;
+    @Autowired
+    private Objects objects;
 
     /**
      * Showing top objects considering entered role
@@ -41,7 +49,7 @@ public class MainController {
     public ModelAndView showObjects(HttpServletRequest request) {
         LOGGER.debug("Showing top objects considering role");
         request.getSession().setAttribute("right", dao.getRightByUserName(request.getParameter("userName")));
-        return new ModelAndView(SHOW_ALL_OBJECTS, LIST, dao.getTopObject());
+        return new ModelAndView(SHOW_ALL_OBJECTS, LIST, objects.getTopObject());
     }
 
 
@@ -51,7 +59,7 @@ public class MainController {
     @RequestMapping(value = {"/home", "/top"})
     public ModelAndView getTop() {
         LOGGER.debug("Showing top objects");
-        return new ModelAndView(SHOW_ALL_OBJECTS, LIST, dao.getTopObject());
+        return new ModelAndView(SHOW_ALL_OBJECTS, LIST, objects.getTopObject());
     }
 
     /**
@@ -63,7 +71,7 @@ public class MainController {
     public ModelAndView showChildren(@RequestParam(value = OBJECT_ID) String objectID) {
         LOGGER.debug("Showing children");
         int id = Integer.parseInt(objectID.substring(objectID.lastIndexOf('_') + 1, objectID.length()));
-        List<LWObject> list = dao.getChildren(id);
+        List<LWObject> list = objects.getChildren(id);
         if (list.isEmpty()) {
             return new ModelAndView(SHOW_ALL_OBJECTS, LIST, objectID);
         }
@@ -77,7 +85,7 @@ public class MainController {
      */
     @RequestMapping("/cPath")
     public ModelAndView getChildrenPath(@RequestParam(value = OBJECT_ID) int objectID) {
-        return new ModelAndView(SHOW_ALL_OBJECTS, LIST, dao.getParentByChildren(objectID));
+        return new ModelAndView(SHOW_ALL_OBJECTS, LIST, objects.getParentByChildren(objectID));
     }
 
     /**
@@ -94,7 +102,7 @@ public class MainController {
             objectIdArray[i] = Integer.parseInt(arrays[i].substring(arrays[i].indexOf('_') + 1, arrays[i].length()));
             parentID = arrays[i].substring(0, arrays[i].indexOf('_'));
         }
-        return new ModelAndView(SHOW_ALL_OBJECTS, LIST, dao.removeByID(objectIdArray, parentID));
+        return new ModelAndView(SHOW_ALL_OBJECTS, LIST, objects.removeByID(objectIdArray, parentID));
     }
 
     /**
@@ -138,9 +146,9 @@ public class MainController {
         }
         List<LWObject> list;
         if ("0".equals(parentId)) {
-            list = dao.getTopObject();
+            list = objects.getTopObject();
         } else {
-            list = dao.getChildren(Integer.parseInt(parentId));
+            list = objects.getChildren(Integer.parseInt(parentId));
         }
         return new ModelAndView(SHOW_ALL_OBJECTS, LIST, list);
     }
@@ -154,8 +162,7 @@ public class MainController {
     public ModelAndView editObject(@RequestParam(value = OBJECT_ID) String objectId) {
         LOGGER.debug("Editing objects");
         int id = Integer.parseInt(objectId.substring(objectId.indexOf('_') + 1, objectId.length()));
-        LWObject lwObject = dao.getObjectById(id);
-        return new ModelAndView("editObject", "object", lwObject);
+        return new ModelAndView("editObject", "object", objects.getObjectById(id));
     }
 
     /**
@@ -177,26 +184,25 @@ public class MainController {
             for (String key : keySet) {
                 if (temp == 9 && "9".equals(key)) {
                     if (params.get(key).length == 1 && params.get(key)[0].equals("0")) {
-                        dao.deleteAllLessons(objectId);
+                        lessons.deleteAllLessons(objectId);
                     } else {
-                        dao.deleteAllLessons(objectId);
+                        lessons.deleteAllLessons(objectId);
                         for (String less : params.get(key)) {
-                            dao.updateLessons(objectId, less);
+                            lessons.updateLessons(objectId, less);
                         }
                     }
                 } else {
                     if ((!("name").equals(key) && !("objectId").equals(key)) && (Integer.parseInt(key) == temp &&
                             params.get(key) != null)) {
-                            String[] value = params.get(key);
-                            for (String par : value) {
-                                dao.updateParams(objectId, temp, par);
-                            }
+                        String[] value = params.get(key);
+                        for (String par : value) {
+                            dao.updateParams(objectId, temp, par);
+                        }
                     }
                 }
             }
         }
-        List<LWObject> list = dao.changeNameById(objectId, name);
-        return new ModelAndView(SHOW_ALL_OBJECTS, LIST, list);
+        return new ModelAndView(SHOW_ALL_OBJECTS, LIST, objects.changeNameById(objectId, name));
     }
 
     /**
@@ -204,8 +210,8 @@ public class MainController {
      *
      * @param objectType
      */
-    @RequestMapping(value="/params", method=RequestMethod.POST,
-            produces="application/json")
+    @RequestMapping(value = "/params", method = RequestMethod.POST,
+            produces = "application/json")
     public @ResponseBody
     Map<Integer, String> params(@RequestParam(value = "ot") String objectType) {
         return dao.getAttrByObjectIdFromAOT(Integer.parseInt(objectType));
@@ -220,8 +226,7 @@ public class MainController {
     public ModelAndView seeInfo(@RequestParam(value = OBJECT_ID) String objectID) {
         LOGGER.debug("See info objects");
         int id = Integer.parseInt(objectID.substring(objectID.indexOf('_') + 1, objectID.length()));
-        LWObject lwObject = dao.getObjectById(id);
-        return new ModelAndView("infoObject", "object", lwObject);
+        return new ModelAndView("infoObject", "object", objects.getObjectById(id));
     }
 
     /**
@@ -238,50 +243,46 @@ public class MainController {
         } else {
             id = request.getParameter(OBJ_ID);
         }
-        List<LWObject> list = dao.getObjectsListByObject(Integer.parseInt(id));
-        return new ModelAndView(SHOW_ALL_OBJECTS, LIST, list);
+        return new ModelAndView(SHOW_ALL_OBJECTS, LIST, objects.getObjectsListByObject(Integer.parseInt(id)));
     }
 
     /**
      * Shows visit page
-     *
      */
     @RequestMapping("/visit")
     public ModelAndView visitTable() {
-        LOGGER.debug("Visit");
-        Map<Integer, String> lessons = dao.getObjectsByObjectType(6);
+        LOGGER.debug("LWVisit");
+        Map<Integer, String> lessons = visit.getObjectsByObjectType(6);
         return new ModelAndView("visitPage", "lessons", lessons);
     }
-
-
 
     /**
      * Shows lesson conducting dates
      *
      * @param lessonId
      */
-    @RequestMapping(value="/lesson", method=RequestMethod.POST,
-            produces="application/json")
+    @RequestMapping(value = "/lesson", method = RequestMethod.POST,
+            produces = "application/json")
     public @ResponseBody
-    Map<Integer, String>  getLessons(@RequestParam(value = "lesson") int lessonId) {
+    Map<Integer, String> getLessons(@RequestParam(value = "lesson") int lessonId) {
         LOGGER.debug("Lesson");
-        return dao.getStudentsByLessonId(lessonId);
+        return visit.getStudentsByLessonId(lessonId);
     }
 
-    @RequestMapping(value="/lesson_visits", method=RequestMethod.POST,
-            produces="application/json")
+    @RequestMapping(value = "/lesson_visits", method = RequestMethod.POST,
+            produces = "application/json")
     public @ResponseBody
-    List<Visit>  getVisits(@RequestParam(value = "lesson") int lessonId) {
+    List<LWVisit> getVisits(@RequestParam(value = "lesson") int lessonId) {
         LOGGER.debug("Lesson");
-        return dao.getVisitByLessonId(lessonId);
+        return visit.getVisitByLessonId(lessonId);
     }
 
-    @RequestMapping(value="/lesson_date", method=RequestMethod.POST,
-            produces="application/json")
+    @RequestMapping(value = "/lesson_date", method = RequestMethod.POST,
+            produces = "application/json")
     public @ResponseBody
-    List<String>  getDate(@RequestParam(value = "lesson") int lessonId) {
+    List<String> getDate(@RequestParam(value = "lesson") int lessonId) {
         LOGGER.debug("Lesson");
-        return dao.getDistinctDateByLessonId(lessonId);
+        return visit.getDistinctDateByLessonId(lessonId);
     }
 
 
@@ -301,24 +302,22 @@ public class MainController {
             for (Object aKeySet : keySet) {
                 String key = aKeySet.toString();
                 if (key.startsWith(id + '_')) {
-                    dao.insertVisit(lessonId[0], id, key.substring(key.indexOf('_') + 1, key.length()),
+                    visit.insertVisit(lessonId[0], id, key.substring(key.indexOf('_') + 1, key.length()),
                             map.get(key)[0]);
                 }
             }
         }
-        Map<Integer, String> lessons = dao.getObjectsByObjectType(6);
+        Map<Integer, String> lessons = visit.getObjectsByObjectType(6);
         return new ModelAndView("visitPage", "lessons", lessons);
     }
 
     /**
      * Shows search objects page
-     *
      */
     @RequestMapping("/search")
     public ModelAndView searchObject() {
-        LOGGER.debug("Serching new objects");
-        Map<Integer, String> allObjectTypes = dao.getAllObjectTypes();
-        return new ModelAndView("searchObject", LIST, allObjectTypes);
+        LOGGER.debug("Searching new objects");
+        return new ModelAndView("searchObject", LIST, lessons.getAllObjectTypes());
     }
 
     /**
@@ -327,12 +326,12 @@ public class MainController {
      * @param name
      * @param typeID
      */
-    @RequestMapping(value="/find", method=RequestMethod.POST,
-            produces="application/json")
+    @RequestMapping(value = "/find", method = RequestMethod.POST,
+            produces = "application/json")
     public @ResponseBody
     List<LWObject> find(@RequestParam(value = "o") String name,
-                @RequestParam(value = "ot") int typeID ) {
-        return dao.getLWObjectByNameAndType(name, typeID);
+                        @RequestParam(value = "ot") int typeID) {
+        return objects.getLWObjectByNameAndType(name, typeID);
     }
 
     /**
@@ -361,7 +360,7 @@ public class MainController {
     public @ResponseBody
     String getAllLessons() {
         StringBuilder allLessons = new StringBuilder();
-        Map<Integer, String> map = dao.getObjectsByObjectType(6);
+        Map<Integer, String> map = visit.getObjectsByObjectType(6);
         for (Map.Entry<Integer, String> temp : map.entrySet()) {
             allLessons.append(temp.getKey()).append(':').append(temp.getValue()).append(';');
         }
