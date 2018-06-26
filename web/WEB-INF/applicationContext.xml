@@ -8,6 +8,7 @@
        http://www.springframework.org/schema/context
        http://www.springframework.org/schema/context/spring-context-3.0.xsd http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd">
 
+    <context:property-placeholder location="classpath:jdbc.properties"/>
     <bean id="dao" class="org.lab.three.dao.DAOOracleImpl">
         <property name="oracleConnect" ref="oracleConnect"/>
     </bean>
@@ -20,6 +21,10 @@
     <bean id="objects" class="org.lab.three.dao.ObjectsOracleImpl">
         <property name="oracleConnect" ref="oracleConnect"/>
     </bean>
-    <bean id="oracleConnect" class="org.lab.three.connect.OracleConnect"/>
+    <bean id="oracleConnect" class="org.lab.three.connect.OracleConnect">
+        <property name="datasourceName" value="${jdbc.datasourceName}"/>
+        <property name="wlsFactory" value="${jdbc.wlsFactory}"/>
+        <property name="server" value="${jdbc.server}"/>
+    </bean>
 
 </beans>

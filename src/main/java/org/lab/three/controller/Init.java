@@ -26,14 +26,14 @@ public class Init implements ServletContextListener {
      */
     @Override
     public void contextInitialized(ServletContextEvent servletContextEvent) {
-        LOGGER.debug("Initializing context");
-        ApplicationContext applicationContext = (ApplicationContext)servletContextEvent.getServletContext().getAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE);
-        DAO dao = applicationContext.getBean(DAOOracleImpl.class);
-        Connection connection;
-        OracleConnect oracleConnect = applicationContext.getBean(OracleConnect.class);
-        connection = oracleConnect.connect();
-        dao.executeScript(connection);
-        oracleConnect.disconnect(connection,null,null);
+//        LOGGER.debug("Initializing context");
+//        ApplicationContext applicationContext = (ApplicationContext)servletContextEvent.getServletContext().getAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE);
+//        DAO dao = applicationContext.getBean(DAOOracleImpl.class);
+//        Connection connection;
+//        OracleConnect oracleConnect = applicationContext.getBean(OracleConnect.class);
+//        connection = oracleConnect.connect();
+//        dao.executeScript(connection);
+//        oracleConnect.disconnect(connection,null,null);
     }
 
     /**

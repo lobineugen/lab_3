@@ -1,35 +1,36 @@
 package org.lab.three.connect;
 
 import org.apache.log4j.Logger;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.PropertySource;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
-import java.io.IOException;
-import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Hashtable;
-import java.util.Properties;
 
+@Configuration
+@PropertySource("classpath:jdbc.properties")
 public class OracleConnect {
     private static final Logger LOGGER = Logger.getLogger(OracleConnect.class);
-    private static String datasourceName;
-    private static final String DATASOURCE_PROPERTIES_PATH = "application.properties";
-
+    private String datasourceName;
+    private String wlsFactory;
+    private String server;
     /**
      * connects to database
      */
     public Connection connect() {
         LOGGER.debug("Connecting to database");
         Connection connection = null;
-        uploadDatasourceProperties();
         Hashtable hashtable = new Hashtable();
-        hashtable.put(Context.INITIAL_CONTEXT_FACTORY, "weblogic.jndi.WLInitialContextFactory");
-        hashtable.put(Context.PROVIDER_URL, "t3://localhost:7001");
+        LOGGER.debug(wlsFactory + " factory");
+        hashtable.put(Context.INITIAL_CONTEXT_FACTORY, wlsFactory);
+        hashtable.put(Context.PROVIDER_URL, server);
         try {
             Context context = new InitialContext(hashtable);
             DataSource dataSource = (DataSource) context.lookup(datasourceName);
@@ -43,20 +44,6 @@ public class OracleConnect {
         return connection;
     }
 
-    /**
-     * uploads datasourceName name from file
-     */
-    private void uploadDatasourceProperties() {
-        ClassLoader classLoader = getClass().getClassLoader();
-        InputStream socketProperties = classLoader.getResourceAsStream(DATASOURCE_PROPERTIES_PATH);
-        Properties properties = new Properties();
-        try {
-            properties.load(socketProperties);
-        } catch (IOException e) {
-            LOGGER.error("Can't load application.properties", e);
-        }
-        datasourceName = properties.getProperty("datasourceName");
-    }
 
     /**
      * disconnects from database
@@ -81,5 +68,17 @@ public class OracleConnect {
         } catch (SQLException e) {
             LOGGER.error("Exception during disconnection from database", e);
         }
+    }
+
+    public void setDatasourceName(String datasourceName) {
+        this.datasourceName = datasourceName;
+    }
+
+    public void setServer(String server) {
+        this.server = server;
+    }
+
+    public void setWlsFactory(String wlsFactory) {
+        this.wlsFactory = wlsFactory;
     }
 }
