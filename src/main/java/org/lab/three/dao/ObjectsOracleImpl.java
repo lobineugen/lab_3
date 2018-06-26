@@ -172,15 +172,15 @@ public class ObjectsOracleImpl implements Objects {
             }
             String quer = "SELECT * FROM lw_objects " +
                     "WHERE parent_id = (SELECT parent_id FROM lw_objects WHERE object_id = ?)";
-            boolean Null = false;
+            boolean nUll = false;
             if ("0".equals(parentID)) {
                 quer = "SELECT * FROM lw_objects " +
                         "WHERE parent_id IS NULL ";
-                Null = true;
+                nUll = true;
             }
             if (list.isEmpty()) {
                 preparedStatement = connection.prepareStatement(quer);
-                if (!Null) {
+                if (!nUll) {
                     preparedStatement.setInt(1, Integer.parseInt(parentID));
                 }
                 resultSet = preparedStatement.executeQuery();

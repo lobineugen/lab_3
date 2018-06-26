@@ -1,16 +1,10 @@
 package org.lab.three.controller;
 
 import org.apache.log4j.Logger;
-import org.lab.three.dao.DAO;
-import org.lab.three.dao.DAOOracleImpl;
-import org.lab.three.connect.OracleConnect;
-import org.springframework.context.ApplicationContext;
-import org.springframework.web.context.WebApplicationContext;
 
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.servlet.annotation.WebListener;
-import java.sql.Connection;
 
 /**
  * Init class checks necessity of script running

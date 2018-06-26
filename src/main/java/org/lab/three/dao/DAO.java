@@ -1,7 +1,5 @@
 package org.lab.three.dao;
 
-import org.lab.three.beans.LWObject;
-
 import java.sql.Connection;
 import java.util.List;
 import java.util.Map;

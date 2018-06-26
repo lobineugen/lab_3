@@ -84,16 +84,16 @@ public class LWVisit {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
 
-        LWVisit LWVisit = (LWVisit) o;
+        LWVisit lwVisit = (LWVisit) obj;
 
-        if (objectId != LWVisit.objectId) return false;
-        if (lessonId != LWVisit.lessonId) return false;
-        if (!date.equals(LWVisit.date)) return false;
-        return mark.equals(LWVisit.mark);
+        if (objectId != lwVisit.objectId) return false;
+        if (lessonId != lwVisit.lessonId) return false;
+        if (!date.equals(lwVisit.date)) return false;
+        return mark.equals(lwVisit.mark);
     }
 
     @Override
