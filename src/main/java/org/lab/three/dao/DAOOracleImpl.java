@@ -33,7 +33,7 @@ public class DAOOracleImpl implements DAO {
     /**
      * connects to database
      */
-    public void connect() {
+    private void connect() {
         LOGGER.debug("Connecting to database");
         uploadDatasourceProperties();
         Hashtable hashtable = new Hashtable();
@@ -69,7 +69,7 @@ public class DAOOracleImpl implements DAO {
     /**
      * disconnects from database
      */
-    public void disconnect() {
+    private void disconnect() {
         LOGGER.debug("Disconnecting from database");
         try {
             if (connection != null)
@@ -152,17 +152,15 @@ public class DAOOracleImpl implements DAO {
         LOGGER.debug("Removing object by ID");
         connect();
         List<LWObject> list = new ArrayList<>();
-        StringBuilder query = new StringBuilder("(");
-        for (int i = 0; i < objectID.length; i++) {
-            query.append(objectID[i]);
-            if (i != objectID.length - 1) {
-                query.append(',');
-            }
+        Object[] newArray = new Object[objectID.length];
+        for (int i = 0;i<objectID.length;i++) {
+            newArray[i] = objectID[i];
         }
-        query.append(')');
         try {
             if (objectID.length > 0) {
-                preparedStatement = connection.prepareStatement("delete from lw_objects where object_id in " + query);
+                preparedStatement = connection.prepareStatement("delete from lw_objects where object_id in (?)");
+                Array array = connection.createArrayOf("NUMBER",newArray);
+                preparedStatement.setArray(1,array);
                 preparedStatement.executeUpdate();
             }
             preparedStatement = connection.prepareStatement("SELECT * FROM lw_objects WHERE parent_id = ?");
@@ -217,8 +215,14 @@ public class DAOOracleImpl implements DAO {
             }
             preparedStatement = connection.prepareStatement("INSERT INTO LW_OBJECTS VALUES (?," + parID + ",?,?)");
             preparedStatement.setInt(1, objectID);
-            preparedStatement.setInt(2, Integer.parseInt(objectT));
-            preparedStatement.setString(3, name);
+            if (parID == null) {
+                preparedStatement.setNull(2, Types.INTEGER);
+            } else {
+                preparedStatement.setInt(2, Integer.parseInt(parID));
+            }
+            preparedStatement.setInt(3, Integer.parseInt(objectT));
+            preparedStatement.setString(4, name);
+
             resultSet = preparedStatement.executeQuery();
         } catch (SQLException e) {
             LOGGER.error("Exception while creating object", e);
@@ -300,28 +304,6 @@ public class DAOOracleImpl implements DAO {
         }
         disconnect();
         return list;
-    }
-
-    /**
-     * checks table number
-     * @return number of tables
-     */
-    @Override
-    public int checkTables() {
-        LOGGER.debug("Checking tables");
-        connect();
-        int count = 0;
-        try {
-            preparedStatement = connection.prepareStatement("SELECT count(table_name) AS counts FROM user_tables WHERE table_name IN ('LW_PARAMS','LW_AOT','LW_ATTR','LW_OBJECTS','LW_OBJECT_TYPES','LW_VISIT','LW_RIGHT')");
-            resultSet = preparedStatement.executeQuery();
-            while (resultSet.next()) {
-                count = resultSet.getInt("counts");
-            }
-        } catch (SQLException e) {
-            LOGGER.error("Exception while checking tables", e);
-        }
-        disconnect();
-        return count;
     }
 
     /**

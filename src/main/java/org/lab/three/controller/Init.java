@@ -17,7 +17,6 @@ import javax.servlet.annotation.WebListener;
 public class Init implements ServletContextListener {
     private static final Logger LOGGER = Logger.getLogger(Init.class);
 
-
     /**
      * Runs SQL tables creation script under certain conditions
      *
@@ -27,7 +26,6 @@ public class Init implements ServletContextListener {
     public void contextInitialized(ServletContextEvent servletContextEvent) {
         LOGGER.debug("Initializing context");
         ApplicationContext applicationContext = (ApplicationContext)servletContextEvent.getServletContext().getAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE);
-
         DAO dao = applicationContext.getBean(DAOOracleImpl.class);
         dao.executeScript();
     }

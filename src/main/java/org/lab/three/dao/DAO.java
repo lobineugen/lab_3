@@ -7,8 +7,6 @@ import java.util.List;
 import java.util.Map;
 
 public interface DAO {
-    void connect();
-    void disconnect();
     List<LWObject> getTopObject();
     List<LWObject> getChildren(int objectID);
     List<LWObject> removeByID(int[] objectID, String parentID);
@@ -16,7 +14,6 @@ public interface DAO {
     Map<Integer, String> getObjectTypes(int parentId);
     LWObject getObjectById(int objectId);
     List<LWObject> changeNameById(int objectId, String name);
-    int checkTables();
     void executeScript();
     Multimap<String,String> getParamsById(int objectId);
     List<Integer> getAttrByObjectIdFromParams(int objectId);

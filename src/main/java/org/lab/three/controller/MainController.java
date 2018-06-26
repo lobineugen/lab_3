@@ -40,10 +40,8 @@ public class MainController {
     @RequestMapping(value = {"/sign"})
     public ModelAndView showObjects(HttpServletRequest request) {
         LOGGER.debug("Showing top objects considering role");
-        List<LWObject> list = dao.getTopObject();
-        String userName = request.getParameter("userName");
-        request.getSession().setAttribute("right", dao.getRightByUserName(userName));
-        return new ModelAndView(SHOW_ALL_OBJECTS, LIST, list);
+        request.getSession().setAttribute("right", dao.getRightByUserName(request.getParameter("userName")));
+        return new ModelAndView(SHOW_ALL_OBJECTS, LIST, dao.getTopObject());
     }
 
 
@@ -53,8 +51,7 @@ public class MainController {
     @RequestMapping(value = {"/home", "/top"})
     public ModelAndView getTop() {
         LOGGER.debug("Showing top objects");
-        List<LWObject> list = dao.getTopObject();
-        return new ModelAndView(SHOW_ALL_OBJECTS, LIST, list);
+        return new ModelAndView(SHOW_ALL_OBJECTS, LIST, dao.getTopObject());
     }
 
     /**
@@ -65,9 +62,8 @@ public class MainController {
     @RequestMapping("/children")
     public ModelAndView showChildren(@RequestParam(value = OBJECT_ID) String objectID) {
         LOGGER.debug("Showing children");
-        List<LWObject> list;
         int id = Integer.parseInt(objectID.substring(objectID.lastIndexOf('_') + 1, objectID.length()));
-        list = dao.getChildren(id);
+        List<LWObject> list = dao.getChildren(id);
         if (list.isEmpty()) {
             return new ModelAndView(SHOW_ALL_OBJECTS, LIST, objectID);
         }
@@ -81,9 +77,7 @@ public class MainController {
      */
     @RequestMapping("/cPath")
     public ModelAndView getChildrenPath(@RequestParam(value = OBJECT_ID) int objectID) {
-        List<LWObject> list;
-        list = dao.getParentByChildren(objectID);
-        return new ModelAndView(SHOW_ALL_OBJECTS, LIST, list);
+        return new ModelAndView(SHOW_ALL_OBJECTS, LIST, dao.getParentByChildren(objectID));
     }
 
     /**
@@ -100,8 +94,7 @@ public class MainController {
             objectIdArray[i] = Integer.parseInt(arrays[i].substring(arrays[i].indexOf('_') + 1, arrays[i].length()));
             parentID = arrays[i].substring(0, arrays[i].indexOf('_'));
         }
-        List<LWObject> list = dao.removeByID(objectIdArray, parentID);
-        return new ModelAndView(SHOW_ALL_OBJECTS, LIST, list);
+        return new ModelAndView(SHOW_ALL_OBJECTS, LIST, dao.removeByID(objectIdArray, parentID));
     }
 
     /**
