@@ -253,7 +253,8 @@ public class DAOOracleImpl implements DAO {
         try {
             preparedStatement = connection.prepareStatement("SELECT name FROM lw_objects WHERE object_id = ?");
             preparedStatement.setInt(1, objectId);
-            while (preparedStatement.executeQuery().next()) {
+            resultSet = preparedStatement.executeQuery();
+            while (resultSet.next()) {
                 name = resultSet.getString(NAME);
             }
         } catch (SQLException e) {
