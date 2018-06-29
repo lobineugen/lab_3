@@ -81,7 +81,7 @@ begin
       lesson_id number,
       editDate varchar2(20),
       mark varchar2(10),
-    CONSTRAINT visit_object_fk FOREIGN KEY (object_id) REFERENCES lw_objects(object_id),
+    CONSTRAINT visit_object_fk FOREIGN KEY (object_id) REFERENCES lw_objects(object_id) delete cascade,
     CONSTRAINT visit_lesson_fk FOREIGN KEY (lesson_id) REFERENCES lw_objects(object_id)
       )';
 

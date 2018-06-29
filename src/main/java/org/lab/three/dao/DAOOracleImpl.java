@@ -98,13 +98,14 @@ public class DAOOracleImpl implements DAO {
     public void executeScript(Connection connection) {
         LOGGER.debug("Executing script");
         URL script = DAOOracleImpl.class.getClassLoader().getResource("script.sql");
+        LOGGER.debug(script.getPath());
         ScriptRunner scriptRunner = new ScriptRunner(connection);
         try {
             Reader reader = new BufferedReader(new FileReader(script.getPath()));
             scriptRunner.setSendFullScript(true);
             scriptRunner.runScript(reader);
         } catch (FileNotFoundException e) {
-            LOGGER.error("FileNotFoundException while executing script", e);
+            LOGGER.error("FileNotFoundException while ex    ecuting script", e);
         }
     }
 

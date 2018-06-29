@@ -265,7 +265,7 @@ public class MainController {
             produces = "application/json")
     public @ResponseBody
     Map<Integer, String> getLessons(@RequestParam(value = "lesson") int lessonId) {
-        LOGGER.debug("Lesson");
+        LOGGER.debug("get Lessons");
         return visit.getStudentsByLessonId(lessonId);
     }
 
@@ -273,7 +273,7 @@ public class MainController {
             produces = "application/json")
     public @ResponseBody
     List<LWVisit> getVisits(@RequestParam(value = "lesson") int lessonId) {
-        LOGGER.debug("Lesson");
+        LOGGER.debug("get Visits");
         return visit.getVisitByLessonId(lessonId);
     }
 
@@ -281,7 +281,7 @@ public class MainController {
             produces = "application/json")
     public @ResponseBody
     List<String> getDate(@RequestParam(value = "lesson") int lessonId) {
-        LOGGER.debug("Lesson");
+        LOGGER.debug("get Date");
         return visit.getDistinctDateByLessonId(lessonId);
     }
 
@@ -295,17 +295,21 @@ public class MainController {
     public ModelAndView saveVisit(HttpServletRequest request) {
         LOGGER.debug("Save visit");
         Map<String, String[]> map = request.getParameterMap();
-        String[] lessonId = map.get("lessons");
-        String[] objectIds = map.get(OBJ_ID);
-        Set<String> keySet = map.keySet();
-        for (String id : objectIds) {
-            for (Object aKeySet : keySet) {
-                String key = aKeySet.toString();
-                if (key.startsWith(id + '_')) {
-                    visit.insertVisit(lessonId[0], id, key.substring(key.indexOf('_') + 1, key.length()),
-                            map.get(key)[0]);
+        if (map.containsKey(OBJ_ID)) {
+            String[] lessonId = map.get("lessons");
+            String[] objectIds = map.get(OBJ_ID);
+            Set<String> keySet = map.keySet();
+            for (String id : objectIds) {
+                LOGGER.debug("start");
+                for (Object aKeySet : keySet) {
+                    String key = aKeySet.toString();
+                    if (key.startsWith(id + '_')) {
+                        visit.insertVisit(lessonId[0], id, key.substring(key.indexOf('_') + 1, key.length()),
+                                map.get(key)[0]);
+                    }
                 }
             }
+
         }
         Map<Integer, String> lessons = visit.getObjectsByObjectType(6);
         return new ModelAndView("visitPage", "lessons", lessons);

@@ -44,65 +44,68 @@
                                 data: 'lesson=' + lesson,
                                 success: function (data) {
                                     date = data;
-                                    var tr = document.createElement("tr");
-                                    var thName = document.createElement("th");
-                                    thName.appendChild(document.createTextNode("Name"));
-                                    tr.appendChild(thName);
-                                    $.each(date, function (index, object) {
-                                        var td = document.createElement("td");
-                                        var div = document.createElement("div");
-                                        div.setAttribute("class", "date");
-                                        div.appendChild(document.createTextNode(object));
-                                        td.appendChild(div);
-                                        tr.appendChild(td);
-                                    });
-                                    table.appendChild(tr);
-                                    var numb = 1;
-                                    var count = 0;
-                                    $.each(students, function (key, value) {
-                                        var tr1 = document.createElement("tr");
-                                        var td = document.createElement("td");
-                                        var input = document.createElement("input");
-                                        input.setAttribute("id", "object" + numb++);
-                                        input.setAttribute("type", "hidden");
-                                        input.setAttribute("name", "objectId");
-                                        input.setAttribute("value", key);
-                                        var span = document.createElement("span");
-                                        span.appendChild(document.createTextNode(value));
-                                        td.appendChild(input);
-                                        td.appendChild(span);
-                                        tr1.appendChild(td);
-                                        $.each(date, function (index, d_object) {
-                                            $.each(visits, function (v_index, v_object) {
-                                                if (v_object.date === d_object && parseInt(v_object.objectId) === parseInt(key)) {
-                                                    console.log("yes");
-                                                    var td = document.createElement("td");
-                                                    var input = document.createElement("input");
-                                                    input.setAttribute("type", "text");
-                                                    input.setAttribute("name", key + "_" + d_object);
-                                                    input.setAttribute("value", v_object.mark);
-                                                    td.appendChild(input);
-                                                    tr1.appendChild(td);
-                                                    count = 0;
-                                                    return false;
-                                                } else {
-                                                    count = 1;
-                                                }
-                                            });
-                                            if (count === 1) {
-                                                var td = document.createElement("td");
-                                                var input = document.createElement("input");
-                                                input.setAttribute("type", "text");
-                                                input.setAttribute("name", key + "_" + d_object);
-                                                input.setAttribute("value", "-");
-                                                input.setAttribute("readonly", "true");
-                                                td.appendChild(input);
-                                                tr1.appendChild(td);
-                                                count = 0;
-                                            }
-                                        });
-                                        table.appendChild(tr1);
-                                    });
+                                    if(visits.length>0){
+                                        var tr = document.createElement("tr");
+                                                                            var thName = document.createElement("th");
+                                                                            thName.appendChild(document.createTextNode("Name"));
+                                                                            tr.appendChild(thName);
+                                                                            $.each(date, function (index, object) {
+                                                                                var td = document.createElement("td");
+                                                                                var div = document.createElement("div");
+                                                                                div.setAttribute("class", "date");
+                                                                                div.appendChild(document.createTextNode(object));
+                                                                                td.appendChild(div);
+                                                                                tr.appendChild(td);
+                                                                            });
+                                                                            table.appendChild(tr);
+                                                                            var numb = 1;
+                                                                            var count = 0;
+                                                                            $.each(students, function (key, value) {
+                                                                                var tr1 = document.createElement("tr");
+                                                                                var td = document.createElement("td");
+                                                                                var input = document.createElement("input");
+                                                                                input.setAttribute("id", "object" + numb++);
+                                                                                input.setAttribute("type", "hidden");
+                                                                                input.setAttribute("name", "objectId");
+                                                                                input.setAttribute("value", key);
+                                                                                var span = document.createElement("span");
+                                                                                span.appendChild(document.createTextNode(value));
+                                                                                td.appendChild(input);
+                                                                                td.appendChild(span);
+                                                                                tr1.appendChild(td);
+                                                                                $.each(date, function (index, d_object) {
+                                                                                    $.each(visits, function (v_index, v_object) {
+                                                                                        if (v_object.date === d_object && parseInt(v_object.objectId) === parseInt(key)) {
+                                                                                            console.log("yes");
+                                                                                            var td = document.createElement("td");
+                                                                                            var input = document.createElement("input");
+                                                                                            input.setAttribute("type", "text");
+                                                                                            input.setAttribute("name", key + "_" + d_object);
+                                                                                            input.setAttribute("value", v_object.mark);
+                                                                                            td.appendChild(input);
+                                                                                            tr1.appendChild(td);
+                                                                                            count = 0;
+                                                                                            return false;
+                                                                                        } else {
+                                                                                            count = 1;
+                                                                                        }
+                                                                                    });
+                                                                                    if (count === 1) {
+                                                                                        var td = document.createElement("td");
+                                                                                        var input = document.createElement("input");
+                                                                                        input.setAttribute("type", "text");
+                                                                                        input.setAttribute("name", key + "_" + d_object);
+                                                                                        input.setAttribute("value", "-");
+                                                                                        input.setAttribute("readonly", "true");
+                                                                                        td.appendChild(input);
+                                                                                        tr1.appendChild(td);
+                                                                                        count = 0;
+                                                                                    }
+                                                                                });
+                                                                                table.appendChild(tr1);
+                                                                            });
+                                    }
+
                                 }
                             });
                         }
